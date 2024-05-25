@@ -79,6 +79,14 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'mysql': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'python_ecommerce',
+        'USER': 'matrix',
+        'PASSWORD': 'matrix2580',
+        'HOST': 'localhost',
+        'PORT': '3306'
     }
 }
 
