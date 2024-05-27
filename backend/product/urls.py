@@ -10,4 +10,3 @@ urlpatterns = [
     path("category/", views.CategoryListView.as_view(http_method_names=['get']), name="category"),
     path("category/<slug>/", views.CategoryDetailView.as_view(http_method_names=['get']), name="category-detail"),
 ]
-
