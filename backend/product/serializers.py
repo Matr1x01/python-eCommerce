@@ -1,9 +1,13 @@
-from rest_framework import serializers, pagination
+from urllib.parse import urljoin
+
+from rest_framework import serializers
 from django.core.paginator import Paginator
 from .models import *
+from django.conf import settings
 
 
 class BrandListSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Brand
         fields = ["name", "slug"]
@@ -20,12 +24,17 @@ class CategoryListSerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     brand = BrandListSerializer(read_only=True)
     category = CategoryListSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField("get_images")
+
+    def get_images(self, obj):
+        if obj.images:
+            return urljoin(settings.APP_URL, obj.images.url)
+        return ''
 
     class Meta:
         model = Product
-        fields = ["name", "slug", "selling_price", "brand", "category"]
-        read_only_fields = ["name", "slug",
-                            "selling_price", "brand", "category"]
+        fields = ["name", "slug", "selling_price", "brand", "category", "images"]
+        read_only_fields = ["name", "slug", "selling_price", "brand", "category", "images"]
 
 
 def _paginated_products(self, obj):
@@ -39,11 +48,17 @@ def _paginated_products(self, obj):
 
 class BrandSerializer(serializers.ModelSerializer):
     products = serializers.SerializerMethodField("paginated_products")
+    logo = serializers.SerializerMethodField("get_logo")
+
+    def get_logo(self, obj):
+        if obj.logo:
+            return urljoin(settings.APP_URL, obj.logo.url)
+        return ''
 
     class Meta:
         model = Brand
-        fields = ["name", "slug", "description", "products"]
-        read_only_fields = ["name", "slug", "description", "products"]
+        fields = ["name", "slug", "description", "products", "logo"]
+        read_only_fields = ["name", "slug", "description", "products", "logo"]
 
     def paginated_products(self, obj):
         return _paginated_products(self, obj)

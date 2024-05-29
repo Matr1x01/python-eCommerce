@@ -6,6 +6,7 @@ class Brand(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255)
     description = models.TextField()
+    logo = models.ImageField(upload_to="brand_logo/", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -46,6 +47,7 @@ class Product(models.Model):
     description = models.TextField()
     brand = models.ForeignKey(Brand, related_name="products",
                               on_delete=models.DO_NOTHING, null=True, blank=True)
+    images = models.ImageField(upload_to="product_images/", null=True, blank=True)
     category = models.ManyToManyField(Category, related_name="products")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

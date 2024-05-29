@@ -23,7 +23,9 @@ class ProductListView(APIView):
         except EmptyPage:
             return Responder.success_response('No products found', {'products': {}}, status.HTTP_404_NOT_FOUND)
         serializer = ProductListSerializer(products, many=True)
-        return Responder.success_response('Products fetched successfully', {'products': serializer.data,  'pagination': pagination_data(paginator, current_page)})
+        return Responder.success_response('Products fetched successfully',
+                                          {'products': serializer.data,
+                                           'pagination': pagination_data(paginator, current_page)})
 
 
 class ProductDetailView(APIView):
@@ -48,7 +50,8 @@ class BrandListView(APIView):
         except EmptyPage:
             return Responder.success_response('No brands found', {'brands': {}}, status.HTTP_404_NOT_FOUND)
         serializer = BrandListSerializer(brands, many=True)
-        return Responder.success_response('Brands fetched successfully', {'brands': serializer.data,  'pagination': pagination_data(paginator, current_page)})
+        return Responder.success_response('Brands fetched successfully',
+                                          {'brands': serializer.data, 'pagination': pagination_data(paginator, current_page)})
 
 
 class BrandDetailView(APIView):
@@ -73,7 +76,9 @@ class CategoryListView(APIView):
         except EmptyPage:
             return Responder.success_response('No categories found', {'categories': {}}, status.HTTP_404_NOT_FOUND)
         serializer = CategoryListSerializer(categories, many=True)
-        return Responder.success_response('Categories fetched successfully', {'categories': serializer.data, 'pagination': pagination_data(paginator, current_page)})
+        return Responder.success_response('Categories fetched successfully',
+                                          {'categories': serializer.data,
+                                           'pagination': pagination_data(paginator, current_page)})
 
 
 class CategoryDetailView(APIView):

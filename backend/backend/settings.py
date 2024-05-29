@@ -28,6 +28,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+PORT_NUMBER = 8080
+
+APP_URL = f'http://localhost:{PORT_NUMBER}'
 
 # Application definition
 
@@ -122,6 +125,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+MEDIA_ROOT = BASE_DIR / 'files'
+
+MEDIA_URL = '/files/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -133,4 +139,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-runserver.default_port = "8080"
+runserver.default_port = PORT_NUMBER
