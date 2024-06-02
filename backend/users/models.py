@@ -18,7 +18,7 @@ class Customer(models.Model):
         related_name='customer',
         related_query_name='customer',
         choices=[
-            (u.id, u.first_name) for u in
+            (u.id, u.username) for u in
             CustomUser.objects.filter(user_type=UserEnum.CUSTOMER.value)
         ]
     )
@@ -36,12 +36,16 @@ class Customer(models.Model):
         return self.name
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        user = CustomUser.objects.create_user(
-            username=self.phone,
-            password='123456',
-            first_name=self.name,
-            user_type=UserEnum.CUSTOMER.value)
-        self.user = user
+        if not self.user:
+            user = CustomUser.objects.create_user(
+                username=self.phone,
+                password='123456',
+                first_name=self.name,
+                user_type=UserEnum.CUSTOMER.value)
+            self.user = user
+        else:
+            self.user.first_name = self.name
+            
         return super().save(force_insert, force_update, using, update_fields)
 
     class Meta:

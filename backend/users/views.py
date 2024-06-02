@@ -1,38 +1,70 @@
 from backend.enums.gender import Gender
 from rest_framework.views import APIView
-from .serializers import CustomerRegisterSerializer
+from rest_framework.authtoken.views import ObtainAuthToken
+from .serializers import CustomerLoginSerializer, CustomerRegisterSerializer, CustomerDetailSerializer
 from backend.utils.Responder import Responder
 from rest_framework import status
 from django.contrib.auth import authenticate, login
 from rest_framework.authtoken.models import Token
+from backend.utils.CustomTokenAuthentication import CustomTokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from backend.utils.ParseError import parse_error
 
 
-class CustomerRegisterView(APIView):
+class CustomerRegisterView(ObtainAuthToken):
     def post(self, request):
         serializer = CustomerRegisterSerializer(data=request.data)
-
         if serializer.is_valid():
             data = serializer.validated_data
-            serializer.save()
-            return Responder.success_response('Registration Success', serializer.data, status.HTTP_201_CREATED)
+            try:
+                serializer.save()
+            except Exception as e:
+                return Responder.error_response(message='Error registering', errors=parse_error(e),
+                                                status_code=status.HTTP_400_BAD_REQUEST)
+            user = authenticate(
+                request, username=data['phone'], password=serializer.password)
+            if user:
+                token, created = Token.objects.get_or_create(user=user)
+                return Responder.success_response('Registration Success', {
+                        'token': token.key,
+                        'customer': CustomerDetailSerializer(user.customer).data
+                    }, status.HTTP_201_CREATED)
 
         return Responder.error_response(message='Error registering', errors=serializer.errors,
                                         status_code=status.HTTP_400_BAD_REQUEST)
 
 
-class CustomerLoginView(APIView):
+class CustomerLoginView(ObtainAuthToken):
     def post(self, request):
-        serializer = CustomerRegisterSerializer(data=request.data)
+        serializer = CustomerLoginSerializer(data=request.data)
 
         if serializer.is_valid():
             data = serializer.validated_data
-            customer = authenticate(request, username=data['phone'], password=data['password'])
-            if customer:
-                login(request, customer)
-                token, created = Token.objects.get_or_create(user=customer)
+            user = authenticate(
+                request, username=data['phone'], password=data['password'])
+            if user:
+                token, created = Token.objects.get_or_create(user=user)
                 return Responder.success_response('Login Success', {
                     'token': token.key,
-                    'customer': serializer.data
+                    'customer': CustomerDetailSerializer(user.customer).data
                 }, status.HTTP_200_OK)
 
             return Responder.error_response('Invalid credentials', status_code=status.HTTP_401_UNAUTHORIZED)
+
+
+class CustomerDetailView(APIView):
+    authentication_classes = [CustomTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        customer = request.user.customer
+        serializer = CustomerDetailSerializer(customer)
+        return Responder.success_response('Customer Details', serializer.data, status.HTTP_200_OK)
+    
+    def put(self, request, format=None):
+        customer = request.user.customer
+        serializer = CustomerDetailSerializer(customer, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Responder.success_response('Customer Details Updated', serializer.data, status.HTTP_200_OK)
+        return Responder.error_response('Error updating customer details', serializer.errors, status.HTTP_400_BAD_REQUEST)

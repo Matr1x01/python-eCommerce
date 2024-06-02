@@ -15,20 +15,26 @@ def validate_phone(phone):
 
 class CustomerRegisterSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
-    phone = serializers.CharField(max_length=15, min_length=11, required=True)
-    password = serializers.CharField(max_length=255, min_length=8, required=True, write_only=True)
-    confirm_password = serializers.CharField(max_length=255, min_length=8, required=True, write_only=True)
+    phone = serializers.CharField(
+        max_length=15, min_length=11, required=True)
+    password = serializers.CharField(
+        max_length=255, min_length=8, required=True, write_only=True)
+    confirm_password = serializers.CharField(
+        max_length=255, min_length=8, required=True, write_only=True)
     date_of_birth = serializers.DateField(required=False)
     gender = serializers.CharField(required=False)
 
     def validate(self, data):
-        data['phone'] = validate_phone(data['phone'])
 
-        # validate password and confirm password
+        data['phone'] = validate_phone(data['phone'])
+        if Customer.objects.filter(user__username=data['phone']).exists():
+            raise serializers.ValidationError("Phone number already exists")
+
         password = data['password']
         confirm_password = data['confirm_password']
         if password != confirm_password:
-            raise serializers.ValidationError("Password and confirm password does not match")
+            raise serializers.ValidationError(
+                "Password and confirm password does not match")
         del data['confirm_password']
         self.password = password
         del data['password']
@@ -47,7 +53,8 @@ class CustomerRegisterSerializer(serializers.Serializer):
 
 class CustomerLoginSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=15, min_length=11, required=True)
-    password = serializers.CharField(max_length=255, min_length=8, required=True, write_only=True)
+    password = serializers.CharField(
+        max_length=255, min_length=8, required=True, write_only=True)
 
     def validate(self, data):
         data['phone'] = validate_phone(data['phone'])
@@ -59,3 +66,15 @@ class CustomerLoginSerializer(serializers.Serializer):
         extra_kwargs = {
             'password': {'write_only': True, 'hidden': True}
         }
+
+
+class CustomerDetailSerializer(serializers.ModelSerializer):
+    phone = serializers.CharField(max_length=15, min_length=11, required=True)
+
+    def get_phone(self, obj):
+        return obj.user.username
+
+    class Meta:
+        model = Customer
+        fields = ('name', 'phone', 'date_of_birth', 'gender')
+        read_only_fields = ('phone',)
