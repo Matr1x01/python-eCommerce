@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'product.apps.ProductConfig'
+    'product.apps.ProductConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -93,6 +94,8 @@ DATABASES = {
     #     'PORT': '3306'
     # }
 }
+
+AUTH_USER_MODEL = "users.CustomUser"
 
 
 # Password validation

@@ -12,9 +12,12 @@ class Responder:
         }, status=status_code)
 
     @staticmethod
-    def error_response(message, status_code=status.HTTP_400_BAD_REQUEST):
+    def error_response(message, errors=None, status_code=status.HTTP_400_BAD_REQUEST):
+        if errors is None:
+            errors = {}
         return Response({
             'message': message,
             'status': 'error',
-            'data': {}
+            'data': {},
+            'errors': errors
         }, status=status_code)

@@ -22,7 +22,7 @@ class ProductDetailView(APIView):
         try:
             product = Product.objects.get(slug=slug)
         except Product.DoesNotExist:
-            return Responder.error_response('Product not found', status.HTTP_404_NOT_FOUND)
+            return Responder.error_response(message='Product not found', status_code=status.HTTP_404_NOT_FOUND)
 
         serializer = ProductDetailSerializer(product)
         return Responder.success_response('Product fetched successfully', {'product': serializer.data})
@@ -40,12 +40,11 @@ class BrandDetailView(PaginatedAPIView):
         try:
             brand = Brand.objects.get(slug=slug)
         except Brand.DoesNotExist:
-            return Responder.error_response('Brand not found', status.HTTP_404_NOT_FOUND)
+            return Responder.error_response(message='Brand not found', status_code=status.HTTP_404_NOT_FOUND)
 
         brand_serializer = BrandSerializer(brand)
         products = Product.objects.filter(brand=brand).order_by('name')
         paginated_products_response = self.get_paginated_response(products, ProductListSerializer)
-        print(paginated_products_response)
 
         return Responder.success_response('Brand fetched successfully', {
             'brand': brand_serializer.data,
@@ -66,7 +65,7 @@ class CategoryDetailView(PaginatedAPIView):
         try:
             category = Category.objects.get(slug=slug)
         except Category.DoesNotExist:
-            return Responder.error_response('Category not found', status.HTTP_404_NOT_FOUND)
+            return Responder.error_response(message='Category not found', status_code=status.HTTP_404_NOT_FOUND)
 
         category_serializer = CategorySerializer(category)
         products = Product.objects.filter(category=category).order_by('name')
