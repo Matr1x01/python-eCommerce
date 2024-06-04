@@ -2,6 +2,7 @@ from django.contrib import admin
 from users.models import CustomUser, Customer, Staff
 from django import forms
 from backend.enums.user import User as UserEnum
+from django.utils.html import format_html
 
 
 class UserTypeFilter(admin.SimpleListFilter):
@@ -39,12 +40,23 @@ class CustomerForm(forms.ModelForm):
 
 
 class CustomerAdmin(admin.ModelAdmin):
-    readonly_fields = ('user',)
+
+    # return a a tab ffor the address admin
+    def addresses(self, obj):
+        section = '<ol>'
+        for address in obj.addresses.all():
+            section += '<li><a href="/admin/address/address/%s/change">%s</a></li>' % (address.id, address.address)
+        section += '</ol>'
+        
+        return format_html(section)
+
+    readonly_fields = ('user', 'addresses')
+    fields = ('user', 'addresses', 'phone', 'name')
+    list_display = ('user', 'phone', 'name', 'addresses')
 
 
 class StaffAdmin(admin.ModelAdmin):
     readonly_fields = ('user',)
-
 
 
 admin.site.register(CustomUser, CustomUserAdmin)

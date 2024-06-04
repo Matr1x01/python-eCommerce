@@ -1,7 +1,7 @@
 from backend.enums.gender import Gender
 from rest_framework.views import APIView
 from rest_framework.authtoken.views import ObtainAuthToken
-from .serializers import CustomerLoginSerializer, CustomerRegisterSerializer, CustomerDetailSerializer
+from .serializers import CustomerLoginSerializer, CustomerPasswordUpdateSerializer, CustomerRegisterSerializer, CustomerDetailSerializer
 from backend.utils.Responder import Responder
 from rest_framework import status
 from django.contrib.auth import authenticate, login
@@ -68,3 +68,21 @@ class CustomerDetailView(APIView):
             serializer.save()
             return Responder.success_response('Customer Details Updated', serializer.data, status.HTTP_200_OK)
         return Responder.error_response('Error updating customer details', serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+
+class CustomerPasswordUpdateView(APIView):
+    authentication_classes = [CustomTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, format=None):
+        customer = request.user
+        serializer = CustomerPasswordUpdateSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            password = data['password'] 
+            if password:
+                customer.set_password(password)
+                customer.save()
+                return Responder.success_response('Password Updated', None, status.HTTP_200_OK) 
+        
+        return Responder.error_response('Error updating password', serializer.errors, status.HTTP_400_BAD_REQUEST)

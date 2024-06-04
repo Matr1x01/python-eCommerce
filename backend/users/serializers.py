@@ -78,3 +78,18 @@ class CustomerDetailSerializer(serializers.ModelSerializer):
         model = Customer
         fields = ('name', 'phone', 'date_of_birth', 'gender')
         read_only_fields = ('phone',)
+
+
+class CustomerPasswordUpdateSerializer(serializers.Serializer):
+    password = serializers.CharField(
+        max_length=255, min_length=8, required=True, write_only=True)
+    confirm_password = serializers.CharField(
+        max_length=255, min_length=8, required=True, write_only=True)
+
+    def validate(self, data):
+        password = data['password']
+        confirm_password = data['confirm_password']
+        if password != confirm_password:
+            raise serializers.ValidationError(
+                "Password and confirm password does not match")
+        return data 

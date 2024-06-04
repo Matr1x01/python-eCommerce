@@ -15,12 +15,9 @@ class Customer(models.Model):
         CustomUser,
         on_delete=models.CASCADE,
         null=False, blank=False,
+        default=None,
         related_name='customer',
-        related_query_name='customer',
-        # choices=[
-        #     (u.id, u.username) for u in
-        #     CustomUser.objects.filter(user_type=UserEnum.CUSTOMER.value)
-        # ]
+        related_query_name='customer', 
     )
     name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20, unique=True)
@@ -61,10 +58,6 @@ class Staff(models.Model):
         null=False, blank=False,
         related_name='staff',
         related_query_name='staff',
-        # choices=[
-        #     (u.id, u.username) for u in
-        #     CustomUser.objects.filter(user_type=UserEnum.STAFF.value)
-        # ]
     )
     name = models.CharField(max_length=255, null=False)
     email = models.CharField(max_length=255, unique=True, null=False)
