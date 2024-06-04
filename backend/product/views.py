@@ -8,15 +8,20 @@ from .serializers import (
 )
 from backend.utils.Responder import Responder
 from backend.utils.PaginatedAPIWiew import PaginatedAPIView
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import permission_classes
 
 
+@permission_classes((AllowAny, ))
 class ProductListView(PaginatedAPIView):
     def get(self, request):
-        products = Product.objects.defer('description', 'cost_price').order_by('name')
+        products = Product.objects.defer(
+            'description', 'cost_price').order_by('name')
         products = self.get_paginated_response(products, ProductListSerializer)
         return Responder.success_response('Products fetched successfully', products)
 
 
+@permission_classes((AllowAny, ))
 class ProductDetailView(APIView):
     def get(self, request, slug):
         try:
@@ -28,6 +33,7 @@ class ProductDetailView(APIView):
         return Responder.success_response('Product fetched successfully', {'product': serializer.data})
 
 
+@permission_classes((AllowAny, ))
 class BrandListView(PaginatedAPIView):
     def get(self, request):
         brands = Brand.objects.order_by('name')
@@ -35,6 +41,7 @@ class BrandListView(PaginatedAPIView):
         return Responder.success_response('Brands fetched successfully', brands)
 
 
+@permission_classes((AllowAny, ))
 class BrandDetailView(PaginatedAPIView):
     def get(self, request, slug):
         try:
@@ -44,7 +51,8 @@ class BrandDetailView(PaginatedAPIView):
 
         brand_serializer = BrandSerializer(brand)
         products = Product.objects.filter(brand=brand).order_by('name')
-        paginated_products_response = self.get_paginated_response(products, ProductListSerializer)
+        paginated_products_response = self.get_paginated_response(
+            products, ProductListSerializer)
 
         return Responder.success_response('Brand fetched successfully', {
             'brand': brand_serializer.data,
@@ -53,13 +61,16 @@ class BrandDetailView(PaginatedAPIView):
         })
 
 
+@permission_classes((AllowAny, ))
 class CategoryListView(PaginatedAPIView):
     def get(self, request):
         categories = Category.objects.order_by('name')
-        categories = self.get_paginated_response(categories, CategoryListSerializer)
+        categories = self.get_paginated_response(
+            categories, CategoryListSerializer)
         return Responder.success_response('Categories fetched successfully', categories)
 
 
+@permission_classes((AllowAny, ))
 class CategoryDetailView(PaginatedAPIView):
     def get(self, request, slug):
         try:
@@ -69,7 +80,8 @@ class CategoryDetailView(PaginatedAPIView):
 
         category_serializer = CategorySerializer(category)
         products = Product.objects.filter(category=category).order_by('name')
-        paginated_products_response = self.get_paginated_response(products, ProductListSerializer)
+        paginated_products_response = self.get_paginated_response(
+            products, ProductListSerializer)
 
         return Responder.success_response('Category fetched successfully', {
             'category': category_serializer.data,
