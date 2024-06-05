@@ -3,17 +3,21 @@ from users.models import Customer
 from address.models import Address
 from product.models import Product
 from backend.enums.status import Status
+import uuid
 
 
 class Wishlist(models.Model):
     key = models.UUIDField(unique=True, editable=False,
-                           null=False, blank=False)
+                           null=False, blank=False,default=uuid.uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     customer = models.OneToOneField(
         Customer, related_name='wishlist', on_delete=models.CASCADE, null=False, blank=False)
     status = models.SmallIntegerField(
         choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
+
+    def __str__(self):
+        return self.customer.user.customer.name + "-" + str(self.key)
 
 
 class WishlistItem(models.Model):
@@ -26,10 +30,13 @@ class WishlistItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.product.name + "-" + str(self.wishlist.key)
+
 
 class Cart(models.Model):
     key = models.UUIDField(unique=True, editable=False,
-                           null=False, blank=False)
+                           null=False, blank=False,default=uuid.uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     customer = models.OneToOneField(

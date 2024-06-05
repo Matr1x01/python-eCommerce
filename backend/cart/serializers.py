@@ -18,13 +18,35 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 
 class WishlistSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+
+    def get_items(self, obj):
+        return GetWishlistItemSerializer(obj.items.all(), many=True).data
+
     class Meta:
         model = Wishlist
-        fields = ('key', 'created_at', 'updated_at', 'customer', 'status')
-        read_only_fields = ('key', 'created_at')
+        fields = ('key', 'created_at', 'updated_at', 'customer', 'status', 'items')
+        read_only_fields = ('key', 'created_at', 'items')
 
 
-class WishlistItemSerializer(serializers.ModelSerializer):
+class GetWishlistItemSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField()
+
+    def get_product(self, obj):
+        return {
+            'name': obj.product.name,
+            'slug': obj.product.slug,
+            'selling_price': obj.product.selling_price,
+            'images': obj.product.images.url if obj.product.images else ''
+        }
+
     class Meta:
         model = WishlistItem
-        fields = ('wishlist', 'product', 'status', 'created_at', 'updated_at')
+        fields = ('product',)
+        read_only_fields = ('product',)
+
+
+class StoreWishlistItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WishlistItem
+        fields = ('wishlist', 'product')
