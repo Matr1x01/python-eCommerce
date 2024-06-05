@@ -72,3 +72,12 @@ class CartItem(models.Model):
         choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class ActiveCartItemManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status=Status.ACTIVE.value)
+    
+class ActiveWishlistItemManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status=Status.ACTIVE.value)

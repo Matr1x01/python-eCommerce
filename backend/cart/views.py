@@ -3,62 +3,72 @@ from .models import Cart, CartItem, Wishlist, WishlistItem
 from backend.utils.Responder import Responder
 from backend.utils.ParseError import parse_error
 from .serializers import CartSerializer, CartItemSerializer, WishlistSerializer, GetWishlistItemSerializer, \
-    StoreWishlistItemSerializer
+    WishlistItemSerializer
 from backend.enums.status import Status
 from rest_framework import status
-
+from rest_framework.permissions import IsAuthenticated
 from product.models import Product
 
 
 def get_wishlist(user, status=Status.ACTIVE.value):
-    wishlist = Wishlist.objects.filter(
-        customer=user.customer, status=status).first()
-    if wishlist:
-        return wishlist
-    wishlist_data = {
-        'customer': user.customer,
-        'status': status,
-    }
+    return Wishlist.objects.filter(customer=user.customer, status=status).first()
 
-    try:
-        wishlist = Wishlist.objects.create(**wishlist_data)
-        return wishlist
-    except Exception as e:
-        return e
+def get_cart(user, status=Status.ACTIVE.value):
+    return Cart.objects.filter(customer=user.customer, status=status).first()
+
+class AuthenticatedAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def handle_errors(self, exc, status=status.HTTP_400_BAD_REQUEST):
+        return Responder.error_response(message='Error processing request', errors=parse_error(exc), status_code=status)
 
 
-class WishlistAPIView(APIView):
+class WishlistAPIView(AuthenticatedAPIView):
     def get(self, request):
-        if request.user.is_authenticated:
-            wishlist = get_wishlist(request.user)
-            if isinstance(wishlist, Wishlist):
-                return Responder.success_response('Wishlist fetched successfully', WishlistSerializer(wishlist).data)
-            return Responder.error(message='Error fetching wishlist', errors=parse_error(wishlist))
-
-        return Responder.error_response(message='Unauthorized', status_code=status.HTTP_401_UNAUTHORIZED)
+        wishlist = get_wishlist(request.user)
+        if isinstance(wishlist, Wishlist):
+            return Responder.success_response('Wishlist fetched successfully', WishlistSerializer(wishlist).data)
+        return Responder.error(message='Error fetching wishlist', errors=parse_error(wishlist))
 
     def post(self, request):
         if request.user.is_authenticated:
-            product = Product.objects.filter(slug=request.data.get('product')).first()
-            if not product:
-                return Responder.error_response(message='Valid Product is required', status_code=status.HTTP_400_BAD_REQUEST)
+            wishlist_item_serializer = WishlistItemSerializer(
+                data=request.data)
+            if wishlist_item_serializer.is_valid():
+                product = Product.objects.filter(
+                    slug=request.data.get('product')).first()
+                if not product:
+                    return Responder.error_response(message='Valid Product is required', status_code=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Responder.error_response(message='Error adding product to wishlist', errors=wishlist_item_serializer.errors)
 
             wishlist = get_wishlist(request.user)
+
             if isinstance(wishlist, Wishlist):
-                if WishlistItem.objects.filter(wishlist=wishlist, product=product).exists():
+                exists_in_wishlist = WishlistItem.objects.filter(
+                    wishlist=wishlist, product=product).first()
+                if exists_in_wishlist:
+                    if exists_in_wishlist.status == Status.INACTIVE.value:
+                        exists_in_wishlist.status = Status.ACTIVE.value
+                        exists_in_wishlist.save()
+
+                        wishlist.refresh_from_db()
+
                     return Responder.success_response('Wishlist fetched successfully', WishlistSerializer(wishlist).data)
 
                 wishlist_item_data = {
-                    'wishlist': wishlist.id,
-                    'product': product.id,
+                    'wishlist': wishlist,
+                    'product': product,
                 }
-                wishlist_item_serializer = StoreWishlistItemSerializer(data=wishlist_item_data)
-                if wishlist_item_serializer.is_valid():
-                    wishlist_item_serializer.save()
-                else:
-                    return Responder.error_response(message='Error adding product to wishlist', errors=wishlist_item_serializer.errors)
+                print(wishlist_item_data)
 
-                wishlist = Wishlist.objects.filter(id=wishlist.id).first()
+                try:
+                    WishlistItem.objects.create(**wishlist_item_data)
+                except Exception as e:
+                    return Responder.error_response(message='Error adding product to wishlist', errors=parse_error(e))
+
+                wishlist.refresh_from_db()
+
                 return Responder.success_response('Wishlist fetched successfully', WishlistSerializer(wishlist).data)
 
             return Responder.error_response(message='Error fetching wishlist', errors=parse_error(wishlist))
@@ -67,80 +77,43 @@ class WishlistAPIView(APIView):
 
     def delete(self, request):
         if request.user.is_authenticated:
-            wishlist = Wishlist.objects.filter(
-                customer=request.user.customer, status=Status.ACTIVE.value).first()
-            if wishlist:
-                wishlist.delete()
-                return Responder.success_response('Wishlist deleted successfully')
-            return Responder.error(message='Wishlist not found', status=status.HTTP_404_NOT_FOUND)
+            wishlist_item_serializer = WishlistItemSerializer(
+                data=request.data)
+            if wishlist_item_serializer.is_valid():
+                product = Product.objects.filter(
+                    slug=request.data.get('product')).first()
+                if not product:
+                    return Responder.error_response(message='Valid Product is required', status_code=status.HTTP_400_BAD_REQUEST)
+
+                wishlist = get_wishlist(request.user)
+                if isinstance(wishlist, Wishlist):
+                    exists_in_wishlist = WishlistItem.objects.filter(
+                        wishlist=wishlist, product=product, status=Status.ACTIVE.value).first()
+                    if exists_in_wishlist:
+                        exists_in_wishlist.status = Status.INACTIVE.value
+                        exists_in_wishlist.save()
+
+                        wishlist.refresh_from_db()
+
+                        return Responder.success_response('Wishlist item deleted successfully', WishlistSerializer(wishlist).data)
+
+                    return Responder.error_response(message='Product not found in wishlist', status_code=status.HTTP_404_NOT_FOUND)
+
+                return Responder.error_response(message='Error deleting wishlist', errors=parse_error(wishlist))
+
         return Responder.error(message='Unauthorized', status=status.HTTP_401_UNAUTHORIZED)
 
-    def put(self, request):
-        if request.user.is_authenticated:
-            wishlist = Wishlist.objects.filter(
-                customer=request.user.customer, status=Status.ACTIVE.value).first()
-            if wishlist:
-                wishlist.delete()
-                return Responder.success_response('Wishlist deleted successfully')
-            return Responder.error(message='Wishlist not found', status=status.HTTP_404_NOT_FOUND)
-        return Responder.error
 
+class CartAPIView(AuthenticatedAPIView):
 
-class CartAPIView(APIView):
     def get(self, request):
         if request.user.is_authenticated:
-            cart = Cart.objects.filter(
-                customer=request.user.customer, status=Status.ACTIVE.value).first()
-            if cart:
-                serializer = CartSerializer(cart)
-                return Responder.success_response('Cart fetched successfully', serializer.data)
-            cart_data = {
-                'customer': request.user.customer,
-                'status': Status.ACTIVE,
-                'total_price': 0.00,
-                'subtotal_price': 0.00,
-                'total_items': 0,
-                'discount': 0.00,
-                'tax': 0.00,
-                'shipping': 0.00,
-                'total': 0.00,
-                'address': None
-            }
+            cart = get_cart(request.user)
+            if isinstance(cart, Cart):
+                return Responder.success_response('Cart fetched successfully', CartSerializer(cart).data)
+            return Responder.error(message='Error fetching cart', errors=parse_error(cart))
 
-            try:
-                cart = Cart.objects.create(cart_data)
-                serializer = CartSerializer(cart)
-                return Responder.success_response('Cart fetched successfully', serializer.data)
-            except Exception as e:
-                return Responder.error_response(message='Error fetching cart', errors=parse_error(e))
-
-        return Responder.error(message='Unauthorized', status=status.HTTP_401_UNAUTHORIZED)
-
+        return Responder.error_response(message='Unauthorized', status_code=status.HTTP_401_UNAUTHORIZED)
+    
     def post(self, request):
-        if request.user.is_authenticated:
-            cart = Cart.objects.filter(
-                customer=request.user.customer, status=Status.ACTIVE.value).first()
-            if cart:
-                serializer = CartSerializer(cart)
-                return Responder.success_response('Cart fetched successfully', serializer.data)
-            cart_data = {
-                'customer': request.user.customer,
-                'status': Status.ACTIVE,
-                'total_price': 0.00,
-                'subtotal_price': 0.00,
-                'total_items': 0,
-                'discount': 0.00,
-                'tax': 0.00,
-                'shipping': 0.00,
-                'total': 0.00,
-                'address': None
-            }
-
-            try:
-                cart = Cart.objects.create(cart_data)
-                serializer = CartSerializer(cart)
-                return Responder.success_response('Cart fetched successfully', serializer.data)
-            except Exception as e:
-                return Responder.error_response(message='Error fetching cart', errors=parse_error(e))
-
-        return Responder.error(message='Unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+        pass
