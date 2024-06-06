@@ -20,6 +20,7 @@ class WishlistAdmin(admin.ModelAdmin):
     readonly_fields = ('customer', 'items')
     search_fields = ('customer',)
 
+
 class WishlistItemsAdmin(admin.ModelAdmin):
     class Meta:
         model = WishlistItem
@@ -29,7 +30,38 @@ class WishlistItemsAdmin(admin.ModelAdmin):
     readonly_fields = ('wishlist',)
 
 
-admin.site.register(Cart)
-admin.site.register(CartItem)
+class CartAdmin(admin.ModelAdmin):
+    class Meta:
+        model = Cart
+
+    def items(self, obj):
+        section = '<ol>'
+        for item in obj.items.filter(status=Status.ACTIVE.value).all():
+            section += '<li><a href="/admin/cart/cartitem/%s/change">%s</a></li>' % (item.id, item.product)
+        section += '</ol>'
+
+        return format_html(section)
+
+    fields = ('customer', 'status', 'items', 'total_price', 'subtotal_price', 'total_items', 'discount')
+    readonly_fields = ('customer', 'items', 'total_price', 'subtotal_price', 'total_items', 'discount')
+
+
+class CartItemAdmin(admin.ModelAdmin):
+    class Meta:
+        model = CartItem
+
+    def total_price(self, obj):
+        return obj.quantity * obj.product.selling_price
+
+    def price(self, obj):
+        return obj.product.selling_price
+
+    fields = ('cart', 'product', 'quantity', 'status', 'price', 'total_price')
+    search_fields = ('cart', 'product')
+    readonly_fields = ('cart', 'total_price', 'price',)
+
+
+admin.site.register(Cart, CartAdmin)
+admin.site.register(CartItem, CartItemAdmin)
 admin.site.register(Wishlist, WishlistAdmin)
 admin.site.register(WishlistItem, WishlistItemsAdmin)
