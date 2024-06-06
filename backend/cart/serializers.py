@@ -4,35 +4,67 @@ from .models import Cart, CartItem, Wishlist, WishlistItem
 from rest_framework import serializers
 
 
+class GetCartItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    product_slug = serializers.CharField(source='product.slug', read_only=True)
+    product_selling_price = serializers.DecimalField(source='product.selling_price', max_digits=10, decimal_places=2,
+                                                     read_only=True)
+    product_images = serializers.SerializerMethodField()
+    quantity_in_cart = serializers.IntegerField(
+        source='quantity', read_only=True) 
+
+    def get_product_images(self, obj):
+        return obj.product.images.url if obj.product.images else '' 
+
+    class Meta:
+        model = CartItem
+        fields = ('product_name', 'product_slug', 'product_selling_price',
+                  'product_images', 'quantity_in_cart', 'total_price')
+        read_only_fields = fields
+
+
 class CartSerializer(serializers.ModelSerializer):
     total_items = serializers.IntegerField(read_only=True)
-    subtotal_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
-    discount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
-    tax = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
-    shipping = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
-    total = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    subtotal_price = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True)
+    discount = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True)
+    tax = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True)
+    shipping = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True)
+    total = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True)
+    items = serializers.SerializerMethodField()
 
-    def validate(self, attrs):
-        cart_items = attrs.get('cart').items.all()
-        subtotal_price = sum(item.total_price for item in cart_items)
-        attrs['subtotal_price'] = subtotal_price
+    def get_items(self, obj):
+        return GetCartItemSerializer(obj.items.all(), many=True).data
 
-        discount = attrs.get('discount', 0.00)
-        attrs['discount'] = discount
-
-        tax = attrs.get('tax', 0.00)
-        attrs['tax'] = tax
-
-        attrs['total'] = subtotal_price + tax - discount + attrs.get('shipping', 0.00)
-
-        return attrs
+    def calculate_cart_values(self, obj):
+        subtotal_price = 0
+        total_items = 0
+        discount = 0
+        tax = 0
+        shipping = 0
+        total = 0
+        for item in obj.items.all():
+            subtotal_price += item.product.selling_price * item.quantity
+            total_items += item.quantity
+        total = subtotal_price - discount + tax + shipping
+        return {
+            'subtotal_price': subtotal_price,
+            'total_items': total_items,
+            'discount': discount,
+            'tax': tax,
+            'shipping': shipping,
+            'total': total
+        }
 
     class Meta:
         model = Cart
-        fields = ('key', 'created_at', 'updated_at', 'total_price', 'subtotal_price',
-                  'total_items', 'discount', 'tax', 'shipping', 'total', 'address', 'status')
-        read_only_fields = (
-            'key', 'created_at', 'customer', 'total_price', 'subtotal_price', 'discount', 'tax', 'shipping', 'total',)
+        fields = ('key', 'created_at', 'updated_at', 'subtotal_price',
+                  'total_items', 'discount', 'tax', 'shipping', 'total', 'address', 'status', 'items',)
+        read_only_fields = fields
 
     def create(self, validated_data):
         try:
@@ -43,9 +75,14 @@ class CartSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         try:
-            self.validate(validated_data)
-            instance.address = validated_data.get('address', instance.address)
-            instance.status = validated_data.get('status', instance.status)
+            data = self.calculate_cart_values(instance)
+            instance.subtotal_price = data['subtotal_price']
+            instance.total_items = data['total_items']
+            instance.discount = data['discount']
+            instance.tax = data['tax']
+            instance.shipping = data['shipping']
+            instance.total = data['total']
+
             instance.save()
             return instance
         except Exception as e:
@@ -53,7 +90,8 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 class CartItemSerializer(serializers.ModelSerializer):
-    product = serializers.SlugRelatedField(queryset=Product.objects.all(), slug_field='slug', required=True)
+    product = serializers.SlugRelatedField(
+        queryset=Product.objects.all(), slug_field='slug', required=True)
     quantity = serializers.IntegerField(required=True)
 
     def validate(self, attrs):
@@ -61,7 +99,8 @@ class CartItemSerializer(serializers.ModelSerializer):
         if isinstance(product, str):
             product = Product.objects.filter(slug=product).first()
             if not product:
-                raise serializers.ValidationError({"error": "Valid product is required"})
+                raise serializers.ValidationError(
+                    {"error": "Valid product is required"})
 
         attrs['product'] = product
         attrs['price'] = product.selling_price
@@ -73,33 +112,13 @@ class CartItemSerializer(serializers.ModelSerializer):
         fields = ('product', 'quantity', 'price', 'total_price', 'status')
         read_only_fields = ('price', 'total_price', 'status')
 
-    def create(self, validated_data):
+    def create(self, data):
         try:
-            cart_item = CartItem.objects.create(**validated_data)
+            cart_item = CartItem.objects.create(**data)
 
             return cart_item
         except Exception as e:
             raise serializers.ValidationError({"error": str(e)})
-class GetCartItemSerializer(serializers.ModelSerializer):
-    product_name = serializers.CharField(source='product.name', read_only=True)
-    product_slug = serializers.CharField(source='product.slug', read_only=True)
-    product_selling_price = serializers.DecimalField(source='product.selling_price', max_digits=10, decimal_places=2,
-                                                     read_only=True)
-    product_images = serializers.SerializerMethodField()
-    quantity_in_cart = serializers.IntegerField(source='quantity', read_only=True)
-    total_item_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
-
-    def get_product_images(self, obj):
-        return obj.product.images.url if obj.product.images else ''
-
-    def get_total_item_price(self, obj):
-        return obj.product.selling_price * obj.quantity
-
-    class Meta:
-        model = CartItem
-        fields = (
-            'product_name', 'product_slug', 'product_selling_price', 'product_images', 'quantity', 'total_item_price')
-        read_only_fields = fields
 
 
 class WishlistSerializer(serializers.ModelSerializer):
@@ -133,7 +152,8 @@ class GetWishlistItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WishlistItem
-        fields = ('product_name', 'product_slug', 'product_selling_price', 'product_images')  # Include 'product_images'
+        fields = ('product_name', 'product_slug', 'product_selling_price',
+                  'product_images')  # Include 'product_images'
         read_only_fields = fields  # All fields are read-only
 
 

@@ -37,7 +37,8 @@ class WishlistAPIView(AuthenticatedAPIView):
             return Responder.error_response(message='Error adding product to wishlist',
                                             errors=wishlist_item_serializer.errors)
 
-        product = Product.objects.filter(slug=request.data.get('product')).first()
+        product = Product.objects.filter(
+            slug=request.data.get('product')).first()
         if not product:
             return Responder.error_response(message='Valid Product is required',
                                             status_code=status.HTTP_400_BAD_REQUEST)
@@ -52,7 +53,8 @@ class WishlistAPIView(AuthenticatedAPIView):
                 wishlist_item.status = Status.ACTIVE.value
                 wishlist_item.save()
             else:
-                wishlist_item_serializer.create({'wishlist': wishlist, 'product': product})
+                wishlist_item_serializer.create(
+                    {'wishlist': wishlist, 'product': product})
 
             wishlist.refresh_from_db()
             return Responder.success_response('Product added to wishlist successfully',
@@ -63,7 +65,8 @@ class WishlistAPIView(AuthenticatedAPIView):
     def delete(self, request):
         wishlist = get_wishlist(request.user)
         if wishlist:
-            product = Product.objects.filter(slug=request.data.get('product')).first()
+            product = Product.objects.filter(
+                slug=request.data.get('product')).first()
             if not product:
                 return Responder.error_response(message='Valid Product is required',
                                                 status_code=status.HTTP_400_BAD_REQUEST)
@@ -82,11 +85,12 @@ class WishlistAPIView(AuthenticatedAPIView):
 class CartAPIView(AuthenticatedAPIView):
 
     def get(self, request):
-        cart = get_cart(request.user)
-        if isinstance(cart, Cart):
+        try:
+            cart = get_cart(request.user)
             return Responder.success_response('Cart fetched successfully', CartSerializer(cart).data)
-        return Responder.error_response(message='Error fetching cart', errors=parse_error(cart))
-
+        except Exception as exc:
+            return self.handle_errors(exc)
+        
     def post(self, request):
         cart_item_serializer = CartItemSerializer(data=request.data)
         if not cart_item_serializer.is_valid():
@@ -100,33 +104,21 @@ class CartAPIView(AuthenticatedAPIView):
                 cart_item.quantity += request.data.get('quantity')
                 if cart_item.quantity < 0:
                     cart_item.quantity = 0
+                cart_item.total_price = cart_item.quantity * cart_item.price
                 cart_item.save()
             else:
                 data = cart_item_serializer.validated_data
                 data['cart'] = cart
+                if data.get('quantity') < 0:
+                    return Responder.error_response(message='Quantity must be greater than 0', status_code=status.HTTP_400_BAD_REQUEST)
+                
                 cart_item_serializer.create(data)
-                cart_serializer = CartSerializer(cart)
-                cart_serializer.update(cart_serializer.validated_data)
+
+            cart_serializer = CartSerializer(cart)
+
+            cart_serializer.update(cart, {})
             cart.refresh_from_db()
             return Responder.success_response('Product added to cart successfully',
                                               CartSerializer(cart).data)
 
         return Responder.error_response(message='Error creating cart', errors=parse_error(cart))
-
-    def delete(self, request):
-        cart = get_cart(request.user)
-        if cart:
-            product = Product.objects.filter(slug=request.data.get('product')).first()
-            if not product:
-                return Responder.error_response(message='Valid Product is required',
-                                                status_code=status.HTTP_400_BAD_REQUEST)
-
-            cart_item = cart.items.filter(product=product).first()
-            if cart_item:
-                cart_item.delete()
-                cart.refresh_from_db()
-                return Responder.success_response('Product removed from cart successfully',
-                                                  CartSerializer(cart).data)
-            return Responder.error_response(message='Product does not exist in cart',
-                                            status_code=status.HTTP_400_BAD_REQUEST)
-        return Responder.error_response(message='Error fetching cart', errors=parse_error(cart))

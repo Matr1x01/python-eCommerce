@@ -67,6 +67,9 @@ class Cart(models.Model):
         Address, related_name='cart', on_delete=models.SET_NULL, null=True, blank=True)
     status = models.SmallIntegerField(
         choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
+    
+    def __str__(self):
+        return self.customer.user.customer.name + "-" + str(self.key)
 
 
 class CartItem(models.Model):
@@ -83,3 +86,8 @@ class CartItem(models.Model):
         choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = ActiveCartItemManager()
+
+    def __str__(self):
+        return self.product.name + "-" + str(self.cart.key)
