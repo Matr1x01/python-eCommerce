@@ -51,9 +51,7 @@ class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     customer = models.ForeignKey(
-        Customer, related_name='cart', on_delete=models.CASCADE, null=False, blank=False)
-    total_price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.00)
+        Customer, related_name='cart', on_delete=models.CASCADE, null=False, blank=False) 
     subtotal_price = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.00)
     total_items = models.IntegerField(default=0)
@@ -79,9 +77,7 @@ class CartItem(models.Model):
         Product, on_delete=models.CASCADE, null=False, blank=False, related_name='cart_items')
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.00)
-    total_price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.00)
+        max_digits=10, decimal_places=2, default=0.00) 
     status = models.SmallIntegerField(
         choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
     created_at = models.DateTimeField(auto_now_add=True)

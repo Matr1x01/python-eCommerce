@@ -42,8 +42,8 @@ class CartAdmin(admin.ModelAdmin):
 
         return format_html(section)
 
-    fields = ('customer', 'status', 'items', 'total_price', 'subtotal_price', 'total_items', 'discount')
-    readonly_fields = ('customer', 'items', 'total_price', 'subtotal_price', 'total_items', 'discount')
+    fields = ('customer', 'status', 'items', 'total', 'subtotal_price', 'total_items', 'discount')
+    readonly_fields = ('customer', 'items', 'total', 'subtotal_price', 'total_items', 'discount')
 
 
 class CartItemAdmin(admin.ModelAdmin):
@@ -51,10 +51,7 @@ class CartItemAdmin(admin.ModelAdmin):
         model = CartItem
 
     def total_price(self, obj):
-        return obj.quantity * obj.product.selling_price
-
-    def price(self, obj):
-        return obj.product.selling_price
+        return obj.quantity * obj.price
 
     fields = ('cart', 'product', 'quantity', 'status', 'price', 'total_price')
     search_fields = ('cart', 'product')
