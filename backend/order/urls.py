@@ -1,6 +1,6 @@
 from django.urls import path
 
-from order.views import OrderAPIView
+from order.views import OrderAPIView, OrderDetailsAPIView
 
 urlpatterns = [
     path('order/', OrderAPIView.as_view(http_method_names=['get', 'post', 'delete']), name='order'),
