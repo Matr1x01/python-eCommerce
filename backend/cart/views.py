@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from .models import Cart, CartItem, Wishlist, WishlistItem
+from .models import Cart, Wishlist
 from backend.utils.Responder import Responder
 from backend.utils.ParseError import parse_error
 from .serializers import CartSerializer, CartItemSerializer, WishlistSerializer, WishlistItemSerializer
@@ -122,7 +122,7 @@ class CartAPIView(AuthenticatedAPIView):
 
             cart_serializer = CartSerializer(cart)
 
-            cart_serializer.update(cart, {})
+            cart_serializer.update(cart, cart_serializer.calculate_cart_values(cart))
             cart.refresh_from_db()
             return Responder.success_response(
                 'Product added to cart successfully',
@@ -149,7 +149,8 @@ class CartAPIView(AuthenticatedAPIView):
                 cart_item.delete()
 
                 cart_serializer = CartSerializer(cart)
-                cart_serializer.update(cart, {})
+
+                cart_serializer.update(cart, cart_serializer.calculate_cart_values(cart))
                 
                 cart.refresh_from_db()
                 return Responder.success_response(

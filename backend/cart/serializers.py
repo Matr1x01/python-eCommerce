@@ -75,16 +75,6 @@ class CartSerializer(serializers.ModelSerializer):
         except Exception as e:
             raise serializers.ValidationError({"error": str(e)})
 
-    def update(self, instance, validated_data):
-        try:
-            data = self.calculate_cart_values(instance)
-            for key, value in data.items():
-                setattr(instance, key, value)
-            instance.save()
-            return instance
-        except Exception as e:
-            raise serializers.ValidationError({"error": str(e)})
-
 
 class CartItemSerializer(serializers.ModelSerializer):
     product = serializers.SlugRelatedField(
