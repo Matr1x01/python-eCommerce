@@ -5,7 +5,7 @@ from users.models import Customer
 
 class Address(models.Model):
     address = models.TextField()
-    uuid = models.UUIDField(unique=True, editable=False, null=False, blank=False,default=uuid.uuid4)
+    uuid = models.UUIDField(unique=True, editable=False, null=False, blank=False, default=uuid.uuid4)
     area = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     state = models.CharField(max_length=255)
@@ -27,3 +27,18 @@ class Address(models.Model):
         db_table = 'addresses'
         verbose_name = 'Address'
         verbose_name_plural = 'Addresses'
+
+
+class DeliveryCharge(models.Model):
+    postal_code = models.CharField(max_length=255)
+    charge = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.postal_code
+
+    class Meta:
+        db_table = 'delivery_charges'
+        verbose_name = 'Delivery Charge'
+        verbose_name_plural = 'Delivery Charges'
