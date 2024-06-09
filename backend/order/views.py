@@ -33,13 +33,16 @@ class OrderAPIView(AuthenticatedAPIView):
         return Responder.success_response('Orders fetched successfully', serializer.data)
 
     def post(self, request):
-        cart = request.user.customer.cart.filter(status=Status.ACTIVE.value).first()
+        cart = request.user.customer.cart.filter(
+            status=Status.ACTIVE.value).first()
         if not cart:
             return Responder.error_response(message='User has no active cart', status_code=status.HTTP_400_BAD_REQUEST)
         request.data['cart'] = cart.id
         serializer = OrderSerializer(data=request.data)
         if serializer.is_valid():
-            order = serializer.create(cart)
+            # address = request.user.customer.addresses.filter(
+            #     uuid=request.data.get('address')).first()
+            order = serializer.create({'cart': cart,})
             return Responder.success_response('Order created successfully', OrderDetailsSerializer(order).data)
 
         return Responder.error_response(message='Error creating order', errors=serializer.errors)

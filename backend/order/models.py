@@ -29,7 +29,7 @@ class Order(models.Model):
     delivery_method = models.CharField(max_length=255)
     shipping_address = models.CharField(max_length=255, null=True, blank=True)
     status = models.SmallIntegerField(choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
-    address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True,)
 
     objects = models.Manager()
     active_orders = ActiveOrderManager()

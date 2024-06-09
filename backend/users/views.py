@@ -9,6 +9,8 @@ from rest_framework.authtoken.models import Token
 from backend.utils.CustomTokenAuthentication import CustomTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from backend.utils.ParseError import parse_error
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import permission_classes
 
 
 class CustomerRegisterView(ObtainAuthToken):
@@ -26,9 +28,9 @@ class CustomerRegisterView(ObtainAuthToken):
             if user:
                 token, created = Token.objects.get_or_create(user=user)
                 return Responder.success_response('Registration Success', {
-                        'token': token.key,
-                        'customer': CustomerDetailSerializer(user.customer).data
-                    }, status.HTTP_201_CREATED)
+                    'token': token.key,
+                    'customer': CustomerDetailSerializer(user.customer).data
+                }, status.HTTP_201_CREATED)
 
         return Responder.error_response(message='Error registering', errors=serializer.errors,
                                         status_code=status.HTTP_400_BAD_REQUEST)
@@ -60,10 +62,11 @@ class CustomerDetailView(APIView):
         customer = request.user.customer
         serializer = CustomerDetailSerializer(customer)
         return Responder.success_response('Customer Details', serializer.data, status.HTTP_200_OK)
-    
+
     def put(self, request, format=None):
         customer = request.user.customer
-        serializer = CustomerDetailSerializer(customer, data=request.data, partial=True)
+        serializer = CustomerDetailSerializer(
+            customer, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Responder.success_response('Customer Details Updated', serializer.data, status.HTTP_200_OK)
@@ -79,10 +82,10 @@ class CustomerPasswordUpdateView(APIView):
         serializer = CustomerPasswordUpdateSerializer(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data
-            password = data['password'] 
+            password = data['password']
             if password:
                 customer.set_password(password)
                 customer.save()
-                return Responder.success_response('Password Updated', None, status.HTTP_200_OK) 
-        
+                return Responder.success_response('Password Updated', None, status.HTTP_200_OK)
+
         return Responder.error_response('Error updating password', serializer.errors, status.HTTP_400_BAD_REQUEST)
