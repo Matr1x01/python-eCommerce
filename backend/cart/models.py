@@ -51,7 +51,7 @@ class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     customer = models.ForeignKey(
-        Customer, related_name='cart', on_delete=models.CASCADE, null=False, blank=False) 
+        Customer, related_name='cart', on_delete=models.CASCADE, null=False, blank=False)
     subtotal_price = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.00)
     total_items = models.IntegerField(default=0)
