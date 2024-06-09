@@ -1,6 +1,5 @@
 import uuid
 from django.db import models
-
 from backend.enums.status import Status
 from product.models import Product
 from users.models import Customer
@@ -13,17 +12,10 @@ class ActiveOrderManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(status=Status.ACTIVE.value)
 
-    def get(self, *args, **kwargs):
-        return self.get_queryset().get(*args, **kwargs)
-
-    def filter(self, *args, **kwargs):
-        return self.get_queryset().filter(*args, **kwargs)
-
 
 class Order(models.Model):
     key = models.UUIDField(editable=False, default=uuid.uuid4, unique=True)
-    customer = models.ForeignKey(
-        Customer, on_delete=models.CASCADE, null=False, blank=False, related_name='orders')
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
     date = models.DateTimeField(auto_now_add=True)
     total_items = models.IntegerField(default=0)
     sub_total = models.DecimalField(max_digits=10, decimal_places=2)
@@ -31,34 +23,28 @@ class Order(models.Model):
     discount = models.DecimalField(max_digits=10, decimal_places=2)
     tax = models.DecimalField(max_digits=10, decimal_places=2)
     total = models.DecimalField(max_digits=10, decimal_places=2)
-    order_status = models.SmallIntegerField(
-        choices=[(status.value, status.name) for status in OrderStatus], default=OrderStatus.PENDING.value)
+    order_status = models.SmallIntegerField(choices=[(status.value, status.name) for status in OrderStatus], default=OrderStatus.PENDING.value)
     payment_method = models.CharField(max_length=50)
-    payment_status = models.SmallIntegerField(
-        choices=[(status.value, status.name) for status in PaymentStatus], default=PaymentStatus.UNPAID.value)
-    delivery_method = models.CharField(max_length=255, null=False, blank=False)
+    payment_status = models.SmallIntegerField(choices=[(status.value, status.name) for status in PaymentStatus], default=PaymentStatus.UNPAID.value)
+    delivery_method = models.CharField(max_length=255)
     shipping_address = models.CharField(max_length=255, null=True, blank=True)
-    status = models.SmallIntegerField(
-        choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
-    address = models.ForeignKey(
-        Address, on_delete=models.CASCADE, null=True, blank=True)
+    status = models.SmallIntegerField(choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True)
 
     objects = models.Manager()
+    active_orders = ActiveOrderManager()
 
     def __str__(self):
-        return self.customer.name + " " + str(self.key)
+        return f'{self.customer.name} {self.key}'
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(
-        Order, on_delete=models.CASCADE, null=False, blank=False, related_name='items')
-    product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, null=False, blank=False)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     total = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.SmallIntegerField(
-        choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
+    status = models.SmallIntegerField(choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
 
     def __str__(self):
-        return str(self.product.name) + " " + str(self.order)
+        return f'{self.product.name} {self.order}'

@@ -1,12 +1,8 @@
 from datetime import datetime
-
 from django.db import transaction
 from rest_framework import serializers
-
 from order.models import Order, OrderItem
-
 from cart.models import Cart
-
 from backend.enums.OrderStatus import OrderStatus
 from backend.enums.PaymentStatus import PaymentStatus
 from backend.enums.DeliveryMethod import DeliveryMethod
@@ -27,6 +23,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     def get_product_image(self, obj):
         return obj.product.images.url if obj.product.images else None
+
     class Meta:
         model = OrderItem
         fields = ('quantity', 'price', 'total', 'product_name', 'product_slug', 'product_image')
@@ -38,10 +35,7 @@ class OrderDetailsSerializer(serializers.ModelSerializer):
     payment_status = serializers.SerializerMethodField()
     payment_method = serializers.SerializerMethodField()
     delivery_method = serializers.SerializerMethodField()
-    ordered_items = serializers.SerializerMethodField()
-
-    def get_ordered_items(self, obj):
-        return OrderItemSerializer(obj.items, many=True).data
+    ordered_items = OrderItemSerializer(source='items', many=True)
 
     def get_order_status(self, obj):
         return OrderStatus(obj.order_status).name
@@ -83,15 +77,11 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_delivery_method_name(self, obj):
         return DeliveryMethod(obj.delivery_method).name
 
-    def get_cart(self, obj):
-        return 'cart'
-
     class Meta:
         model = Order
         fields = ('key', 'total', 'total_items', 'date', 'order_status', 'payment_status', 'payment_method', 'delivery_method', 'cart',
                   'payment_method_name', 'delivery_method_name')
-        read_only_fields = (
-        'key', 'total', 'date', 'order_status', 'payment_status', 'payment_method_name', 'delivery_method_name')
+        read_only_fields = ('key', 'total', 'date', 'order_status', 'payment_status', 'payment_method_name', 'delivery_method_name')
 
     def validate(self, data):
         if not data.get('cart').items.exists():
@@ -99,22 +89,23 @@ class OrderSerializer(serializers.ModelSerializer):
         return data
 
     def validate_delivery_method(self, value):
-        if value not in ['home_delivery']:
-            raise serializers.ValidationError('Invalid payment method')
+        if value not in DeliveryMethod.values:
+            raise serializers.ValidationError('Invalid delivery method')
         return value
 
     def validate_payment_method(self, value):
-        if value not in ['cash_on_delivery']:
+        if value not in PaymentMethod.values:
             raise serializers.ValidationError('Invalid payment method')
         return value
 
-    def create(self, cart):
+    def create(self, validated_data):
+        cart = validated_data.pop('cart')
         with transaction.atomic():
             try:
                 order = Order.objects.create(
                     customer=cart.customer,
-                    payment_method=self.validated_data['payment_method'],
-                    delivery_method=self.validated_data['delivery_method'],
+                    payment_method=validated_data['payment_method'],
+                    delivery_method=validated_data['delivery_method'],
                     date=datetime.now(),
                     total_items=cart.total_items,
                     sub_total=cart.subtotal_price,
@@ -128,15 +119,16 @@ class OrderSerializer(serializers.ModelSerializer):
             except Exception as e:
                 raise serializers.ValidationError(str(e))
 
-            order_items = []
-            for item in cart.items.select_related('product').all():
-                order_items.append(OrderItem(
+            order_items = [
+                OrderItem(
                     order=order,
                     product=item.product,
                     quantity=item.quantity,
                     price=item.price,
                     total=item.price * item.quantity
-                ))
+                )
+                for item in cart.items.select_related('product').all()
+            ]
 
             try:
                 OrderItem.objects.bulk_create(order_items)

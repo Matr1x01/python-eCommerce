@@ -12,8 +12,7 @@ class AuthenticatedAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def handle_errors(self, exc, status_code=status.HTTP_400_BAD_REQUEST):
-        return Responder.error_response(message='Error processing request', errors=parse_error(exc),
-                                        status_code=status_code)
+        return Responder.error_response(message='Error processing request', errors=parse_error(exc), status_code=status_code)
 
 
 class OrderDetailsAPIView(AuthenticatedAPIView):
