@@ -27,9 +27,8 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=50)
     payment_status = models.SmallIntegerField(choices=[(status.value, status.name) for status in PaymentStatus], default=PaymentStatus.UNPAID.value)
     delivery_method = models.CharField(max_length=255)
-    shipping_address = models.CharField(max_length=255, null=True, blank=True)
     status = models.SmallIntegerField(choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
-    address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True,)
+    address = models.ForeignKey(Address, on_delete=models.DO_NOTHING, null=False, blank=False,)
 
     objects = models.Manager()
     active_orders = ActiveOrderManager()

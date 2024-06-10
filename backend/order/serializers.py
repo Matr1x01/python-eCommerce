@@ -1,7 +1,6 @@
 from datetime import datetime
 from django.db import transaction
 from rest_framework import serializers
-from address.models import Address
 from order.models import Order, OrderItem
 from cart.models import Cart
 from backend.enums.OrderStatus import OrderStatus
@@ -53,8 +52,8 @@ class OrderDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('key', 'total', 'tax', 'discount', 'sub_total', 'total_items', 'date', 'order_status',
-                  'payment_status', 'shipping_address', 'payment_method', 'delivery_method', 'ordered_items')
+        fields = ('key', 'total', 'tax', 'shipping', 'discount', 'sub_total', 'total_items', 'date', 'order_status',
+                  'payment_status', 'payment_method', 'delivery_method', 'ordered_items')
         read_only_fields = fields
 
 
@@ -65,7 +64,6 @@ class OrderSerializer(serializers.ModelSerializer):
         max_length=255, required=True, write_only=True)
     cart = serializers.PrimaryKeyRelatedField(
         queryset=Cart.objects.all(), write_only=True)
-    address = serializers.UUIDField(required=False,)
     order_status = serializers.SerializerMethodField()
     payment_status = serializers.SerializerMethodField()
     payment_method_name = serializers.SerializerMethodField()
@@ -86,7 +84,7 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ('key', 'total', 'total_items', 'date', 'order_status', 'payment_status', 'payment_method', 'delivery_method', 'cart',
-                  'payment_method_name', 'delivery_method_name', 'address')
+                  'payment_method_name', 'delivery_method_name',)
         read_only_fields = ('key', 'total', 'date', 'order_status',
                             'payment_status', 'payment_method_name', 'delivery_method_name')
 
@@ -94,13 +92,6 @@ class OrderSerializer(serializers.ModelSerializer):
         cart = data.get('cart')
         if not cart.items.exists():
             raise serializers.ValidationError('Cart is empty')
-        address = data.get('address')
-        address = Address.objects.filter(
-            uuid=address, customer=cart.customer).first()
-        if not address and data.get('delivery_method') == DeliveryMethod.HOME_DELIVERY.value:
-            raise serializers.ValidationError(
-                'Address is required for delivery')
-        data['address'] = address
         return data
 
     def validate_delivery_method(self, value):
@@ -130,7 +121,7 @@ class OrderSerializer(serializers.ModelSerializer):
                     discount=cart.discount,
                     tax=cart.tax,
                     total=cart.total,
-                    address=self.validated_data.get('address'),
+                    address=cart.address,
                 )
                 cart.status = Status.INACTIVE.value
                 cart.save()

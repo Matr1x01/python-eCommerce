@@ -2,7 +2,8 @@ from rest_framework.views import APIView
 from .models import Cart, Wishlist
 from backend.utils.Responder import Responder
 from backend.utils.ParseError import parse_error
-from .serializers import CartSerializer, CartItemSerializer, WishlistSerializer, WishlistItemSerializer, CartAddressSerializer
+from .serializers import CartSerializer, CartItemSerializer, WishlistSerializer, WishlistItemSerializer, \
+    CartAddressSerializer
 from backend.enums.status import Status
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -21,14 +22,13 @@ def get_cart(user, status=Status.ACTIVE.value):
     cart = Cart.objects.filter(customer=user.customer, status=status).first()
     if cart:
         return cart
-
-    address = user.customer.addresses.first()
-    if not address:
-        address = Address.objects.create(
-            customer=user.customer, **get_default_address()
-        )
-
     try:
+        address = user.customer.addresses.first()
+        if not address:
+            address = Address.objects.create(
+                customer=user.customer, **get_default_address()
+            )
+
         return Cart.objects.create(customer=user.customer, address=address)
     except Exception as exc:
         return exc
