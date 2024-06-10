@@ -4,6 +4,7 @@ from address.models import Address
 from product.models import Product
 from backend.enums.status import Status
 import uuid
+from backend.enums.DeliveryMethod import DeliveryMethod
 
 
 class ActiveCartItemManager(models.Manager):
@@ -61,13 +62,17 @@ class Cart(models.Model):
     shipping = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.00)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    address = models.OneToOneField(
-        Address, related_name='cart', on_delete=models.SET_NULL, null=True, blank=True)
+    delivery_method = models.CharField(max_length=255, null=False, blank=False, default=DeliveryMethod.HOME_DELIVERY.value)
+    address = models.ForeignKey(Address, related_name='cart', null=False, blank=False, on_delete=models.DO_NOTHING)
     status = models.SmallIntegerField(
         choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
     
     def __str__(self):
         return self.customer.user.customer.name + "-" + str(self.key)
+
+    class Meta:
+        db_table = 'cart'
+        ordering = ['-created_at']
 
 
 class CartItem(models.Model):
@@ -87,3 +92,7 @@ class CartItem(models.Model):
 
     def __str__(self):
         return self.product.name + "-" + str(self.cart.key)
+
+    class Meta:
+        db_table = 'cart_item'
+        ordering = ['-created_at']

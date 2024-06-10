@@ -8,7 +8,7 @@ class Address(models.Model):
     uuid = models.UUIDField(unique=True, editable=False, null=False, blank=False, default=uuid.uuid4)
     area = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
-    state = models.CharField(max_length=255)
+    state = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255)
     postal_code = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)

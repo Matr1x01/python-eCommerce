@@ -2,11 +2,15 @@ from rest_framework.views import APIView
 from .models import Cart, Wishlist
 from backend.utils.Responder import Responder
 from backend.utils.ParseError import parse_error
-from .serializers import CartSerializer, CartItemSerializer, WishlistSerializer, WishlistItemSerializer
+from .serializers import CartSerializer, CartItemSerializer, WishlistSerializer, WishlistItemSerializer, CartAddressSerializer
 from backend.enums.status import Status
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from product.models import Product
+
+from backend.utils.get_default_address import get_default_address
+
+from address.models import Address
 
 
 def get_wishlist(user, status=Status.ACTIVE.value):
@@ -14,14 +18,28 @@ def get_wishlist(user, status=Status.ACTIVE.value):
 
 
 def get_cart(user, status=Status.ACTIVE.value):
-    return Cart.objects.get_or_create(customer=user.customer, status=status)[0]
+    cart = Cart.objects.filter(customer=user.customer, status=status).first()
+    if cart:
+        return cart
+
+    address = user.customer.addresses.first()
+    if not address:
+        address = Address.objects.create(
+            customer=user.customer, **get_default_address()
+        )
+
+    try:
+        return Cart.objects.create(customer=user.customer, address=address)
+    except Exception as exc:
+        return exc
 
 
 class AuthenticatedAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def handle_errors(self, exc, status_code=status.HTTP_400_BAD_REQUEST):
-        return Responder.error_response(message='Error processing request', errors=parse_error(exc), status_code=status_code)
+        return Responder.error_response(message='Error processing request', errors=parse_error(exc),
+                                        status_code=status_code)
 
 
 class WishlistAPIView(AuthenticatedAPIView):
@@ -130,7 +148,7 @@ class CartAPIView(AuthenticatedAPIView):
             )
         except Exception as exc:
             return self.handle_errors(exc)
-        
+
     def delete(self, request):
         try:
             cart = get_cart(request.user)
@@ -139,7 +157,7 @@ class CartAPIView(AuthenticatedAPIView):
 
             if not product:
                 return Responder.error_response(
-                    message='Valid Product is required', 
+                    message='Valid Product is required',
                     status_code=status.HTTP_400_BAD_REQUEST
                 )
 
@@ -151,16 +169,34 @@ class CartAPIView(AuthenticatedAPIView):
                 cart_serializer = CartSerializer(cart)
 
                 cart_serializer.update(cart, cart_serializer.calculate_cart_values(cart))
-                
+
                 cart.refresh_from_db()
                 return Responder.success_response(
-                    'Product removed from cart successfully', 
+                    'Product removed from cart successfully',
                     CartSerializer(cart).data
                 )
-            
+
             return Responder.error_response(
-                message='Product does not exist in cart', 
+                message='Product does not exist in cart',
                 status_code=status.HTTP_400_BAD_REQUEST
             )
         except Exception as exc:
             return self.handle_errors(exc)
+
+
+class CartAddressAPIView(AuthenticatedAPIView):
+    def post(self, request):
+        serializer = CartAddressSerializer(data=request.data, context={'request': request})
+        if not serializer.is_valid():
+            return Responder.error_response(message='Error updating cart address',
+                                            errors=serializer.errors)
+
+        try:
+            cart = get_cart(request.user)
+            cart.address = serializer.validated_data.get('address')
+            cart_serializer = CartSerializer(cart)
+
+            cart_serializer.update(cart, cart_serializer.calculate_cart_values(cart))
+            return Responder.success_response('Cart address updated successfully', CartSerializer(cart).data)
+        except Exception as exc:
+            return Responder.error_response(message='Error updating cart address', errors=parse_error(exc))

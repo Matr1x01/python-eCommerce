@@ -4,6 +4,8 @@ from product.models import Product
 from .models import Cart, CartItem, Wishlist, WishlistItem
 from rest_framework import serializers
 
+from address.models import DeliveryCharge
+
 
 class GetCartItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
@@ -17,7 +19,7 @@ class GetCartItemSerializer(serializers.ModelSerializer):
 
     def get_product_images(self, obj):
         return obj.product.images.url if obj.product.images else ''
-    
+
     def get_total_price(self, obj):
         return obj.product.selling_price * obj.quantity
 
@@ -29,6 +31,9 @@ class GetCartItemSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
+    delivery_method = serializers.CharField(
+        max_length=255, required=True, write_only=True)
+    address = serializers.UUIDField(required=False, )
     total_items = serializers.IntegerField(read_only=True)
     subtotal_price = serializers.DecimalField(
         max_digits=10, decimal_places=2, read_only=True)
@@ -46,12 +51,17 @@ class CartSerializer(serializers.ModelSerializer):
         return GetCartItemSerializer(obj.items.all(), many=True).data
 
     def calculate_cart_values(self, obj):
+        delivery_charge = DeliveryCharge.objects.filter(postal_code=obj.address.postal_code).first()
+        if delivery_charge:
+            shipping = delivery_charge.charge
+        else:
+            shipping = 10
+
         subtotal_price = sum(item.product.selling_price *
                              item.quantity for item in obj.items.all())
         total_items = sum(item.quantity for item in obj.items.all())
         discount = 0
         tax = 0
-        shipping = 0
         total = subtotal_price - discount + tax + shipping
         return {
             'subtotal_price': subtotal_price,
@@ -59,13 +69,13 @@ class CartSerializer(serializers.ModelSerializer):
             'discount': discount,
             'tax': tax,
             'shipping': shipping,
-            'total': total
+            'total': total,
         }
 
     class Meta:
         model = Cart
         fields = ('key', 'created_at', 'updated_at', 'subtotal_price', 'total_items',
-                  'discount', 'tax', 'shipping', 'total', 'address', 'status', 'items')
+                  'discount', 'tax', 'shipping', 'total', 'address', 'status', 'items', 'delivery_method')
         read_only_fields = fields
 
     def create(self, validated_data):
@@ -86,13 +96,12 @@ class CartItemSerializer(serializers.ModelSerializer):
         if isinstance(product, str):
             product = get_object_or_404(Product, slug=product)
         attrs['product'] = product
-        attrs['price'] = product.selling_price 
+        attrs['price'] = product.selling_price
         return attrs
- 
 
     class Meta:
         model = CartItem
-        fields = ('product', 'quantity', 'price',  'status')
+        fields = ('product', 'quantity', 'price', 'status')
         read_only_fields = ('price', 'status')
 
     def create(self, data):
@@ -146,3 +155,20 @@ class WishlistItemSerializer(serializers.ModelSerializer):
         model = WishlistItem
         fields = ('product',)
         read_only_fields = ('product',)
+
+
+class CartAddressSerializer(serializers.Serializer):
+    address = serializers.UUIDField(required=True)
+
+    def validate(self, attrs):
+        address = attrs.get('address')
+        if not address:
+            raise serializers.ValidationError('Address is required')
+
+        address = self.context['request'].user.customer.addresses.filter(uuid=address).first()
+        if not address:
+            raise serializers.ValidationError('Valid Address is required')
+
+        attrs['address'] = address
+
+        return attrs

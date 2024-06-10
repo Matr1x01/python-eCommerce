@@ -40,9 +40,7 @@ class OrderAPIView(AuthenticatedAPIView):
         request.data['cart'] = cart.id
         serializer = OrderSerializer(data=request.data)
         if serializer.is_valid():
-            # address = request.user.customer.addresses.filter(
-            #     uuid=request.data.get('address')).first()
-            order = serializer.create({'cart': cart,})
+            order = serializer.create({'cart': cart})
             return Responder.success_response('Order created successfully', OrderDetailsSerializer(order).data)
 
         return Responder.error_response(message='Error creating order', errors=serializer.errors)

@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from django.core.management.commands.runserver import Command as runserver
+import os
+from dotenv import load_dotenv
+
+load_dotenv('.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,16 +25,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6y)cj7(wbl_2%)n3of$2wc3%ksq=9&etxi!*k$o%_*-ydlf5jz'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-PORT_NUMBER = 8080
+PORT_NUMBER = os.getenv('PORT_NUMBER')
+URL = os.getenv('URL')
 
-APP_URL = f'http://localhost:{PORT_NUMBER}'
+APP_URL = f'{URL}:{PORT_NUMBER}'
 
 # Application definition
 
@@ -132,14 +137,15 @@ USE_I18N = True
 
 USE_TZ = True
 
+
 MEDIA_ROOT = BASE_DIR / 'files'
 
-MEDIA_URL = '/files/'
+MEDIA_URL = os.getenv('MEDIA_URL')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = os.getenv('STATIC_URL')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
