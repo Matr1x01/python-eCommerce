@@ -20,6 +20,10 @@ class ProductListSerializer(serializers.ModelSerializer):
     brand = BrandListSerializer(read_only=True)
     category = CategoryListSerializer(many=True, read_only=True)
     images = serializers.SerializerMethodField()
+    selling_price = serializers.SerializerMethodField()
+
+    def get_selling_price(self, obj):
+        return float(obj.selling_price)
 
     def get_images(self, obj):
         return urljoin(settings.APP_URL, obj.images.url) if obj.images else ''
@@ -49,7 +53,16 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductDetailSerializer(serializers.ModelSerializer):
     brand = BrandListSerializer(read_only=True)
     category = CategoryListSerializer(many=True, read_only=True)
+    selling_price = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+
+    def get_images(self, obj):
+        return urljoin(settings.APP_URL, obj.images.url) if obj.images else ''
+
+    def get_selling_price(self, obj):
+        return float(obj.selling_price)
+    
 
     class Meta:
         model = Product
-        fields = ["name", "slug", "selling_price", "brand", "category", "description"]
+        fields = ["name", "slug", "selling_price", "brand", "category", "description", "images"]
