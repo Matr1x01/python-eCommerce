@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'image_module.apps.ImageModuleConfig',
     'product.apps.ProductConfig',
     'users.apps.UsersConfig',
     'address.apps.AddressConfig',

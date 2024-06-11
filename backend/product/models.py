@@ -1,5 +1,5 @@
 from django.db import models
-
+from image_module.models import ImageModel
 
 class Brand(models.Model):
     name = models.CharField(max_length=255)
@@ -49,10 +49,13 @@ class Product(models.Model):
         null=True,
         blank=True
     )
-    images = models.ImageField(upload_to="product_images/", null=True, blank=True)
     category = models.ManyToManyField(Category, related_name="products")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def images(self):
+        return ImageModel.objects.filter(related_primary_key=self.pk, related_model="Product", related_app="product")
 
     def __str__(self):
         return self.name
