@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'image_module.apps.ImageModuleConfig',
     'product.apps.ProductConfig',
     'users.apps.UsersConfig',
     'address.apps.AddressConfig',
@@ -94,6 +95,10 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     },
+    'test': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'test_db.sqlite3',
+    }
     # 'mysql': {
     #     'ENGINE': 'django.db.backends.mysql',
     #     'NAME': 'python_ecommerce',
