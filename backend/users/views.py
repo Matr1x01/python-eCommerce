@@ -52,6 +52,8 @@ class CustomerLoginView(ObtainAuthToken):
                 }, status.HTTP_200_OK)
 
             return Responder.error_response('Invalid credentials', status_code=status.HTTP_401_UNAUTHORIZED)
+    
+        return Responder.error_response('Error logging in', errors=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomerDetailView(APIView):
