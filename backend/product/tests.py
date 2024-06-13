@@ -38,11 +38,11 @@ class ProductTests(APITestCase):
 
         expected_products = [
             {'name': 'Test Product', 'slug': 'test-product', 'selling_price': 100, 'brand': {'name': 'Test Brand',
-                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': "test-category"}], 'images': ""},
+                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': "test-category"}], 'image': ""},
             {'name': 'Test Product 2', 'slug': 'test-product-2', 'selling_price': 200, 'brand': {'name': 'Test Brand 2',
-                                                                                                 'slug': 'test-brand-2'}, 'category': [{'name': 'Test Category 2', 'slug': "test-category-2"}], 'images': ""},
+                                                                                                 'slug': 'test-brand-2'}, 'category': [{'name': 'Test Category 2', 'slug': "test-category-2"}], 'image': ""},
             {'name': 'Test Product 3', 'slug': 'test-product-3', 'selling_price': 300, 'brand': {'name': 'Test Brand',
-                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': "test-category"}], 'images': ""}
+                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': "test-category"}], 'image': ""}
         ]
 
         for product, expected in zip(products_list, expected_products):
@@ -60,7 +60,7 @@ class ProductTests(APITestCase):
             'selling_price': 100,
             'brand': {'name': 'Test Brand', 'slug': 'test-brand'},
             'category': [{'name': 'Test Category', 'slug': "test-category"}],
-            'images': "",
+            'images': [],
             'description': ''
         }
         self.assertDictEqual(product_data, expected_product)
@@ -100,9 +100,9 @@ class ProductTests(APITestCase):
 
         expected_products = [
             {'name': 'Test Product', 'slug': 'test-product', 'selling_price': 100, 'brand': {'name': 'Test Brand',
-                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'images': ""},
+                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': ""},
             {'name': 'Test Product 3', 'slug': 'test-product-3', 'selling_price': 300, 'brand': {'name': 'Test Brand',
-                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'images': ""}
+                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': ""}
         ]
 
         for product, expected in zip(brand_products, expected_products):
@@ -142,9 +142,9 @@ class ProductTests(APITestCase):
 
         expected_products = [
             {'name': 'Test Product', 'slug': 'test-product', 'selling_price': 100, 'brand': {'name': 'Test Brand',
-                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'images': ""},
+                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': ""},
             {'name': 'Test Product 3', 'slug': 'test-product-3', 'selling_price': 300, 'brand': {'name': 'Test Brand',
-                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'images': ""}
+                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': ""}
         ]
 
         for product, expected in zip(category_products, expected_products):

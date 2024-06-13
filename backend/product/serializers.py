@@ -19,18 +19,18 @@ class CategoryListSerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     brand = BrandListSerializer(read_only=True)
     category = CategoryListSerializer(many=True, read_only=True)
-    images = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
     selling_price = serializers.SerializerMethodField()
 
     def get_selling_price(self, obj):
         return float(obj.selling_price)
 
-    def get_images(self, obj):
-        return urljoin(settings.APP_URL, obj.images.url) if obj.images else ''
+    def get_image(self, obj):
+        return urljoin(settings.APP_URL, obj.first_image.image.url) if obj.first_image else ''
 
     class Meta:
         model = Product
-        fields = ["name", "slug", "selling_price", "brand", "category", "images"]
+        fields = ["name", "slug", "selling_price", "brand", "category", "image"]
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -57,11 +57,10 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
 
     def get_images(self, obj):
-        return urljoin(settings.APP_URL, obj.images.url) if obj.images else ''
+        return [urljoin(settings.APP_URL, image.image.url) for image in obj.images]
 
     def get_selling_price(self, obj):
         return float(obj.selling_price)
-    
 
     class Meta:
         model = Product

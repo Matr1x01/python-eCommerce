@@ -4,6 +4,8 @@ from django.contrib.contenttypes.admin import GenericTabularInline
 from django.utils.html import format_html
 from product.models import *
 
+from image_module.models import ImageModel
+
 
 # class CategoryInline(admin.TabularInline):
 #     model = Product.category.through
@@ -13,19 +15,18 @@ class ImageInline(GenericTabularInline):
     model = ImageModel
 
 
-
-
 class ProductAdmin(admin.ModelAdmin):
 
-    # inlines = [ImageInline]
+    inlines = [ImageInline]
 
-    def image_tag(self, obj):
-        if obj.images:
-            return format_html('<img src="{}" style="width: auto; height: 100px;" />'.format(MEDIA_ROOT+obj.images.url))
-        return "No Image"
+    def images(self, obj):
+        image_section = ""
+        for image in obj.images:
+            image_section += '<img src="{}" style="width: auto; height: 100px; padding:10px;" />'.format(image.get_image_url())
+        return format_html(image_section)
 
-    fields = ('name', 'slug', 'cost_price', 'selling_price', 'description', 'brand', 'category', 'image_tag')
-    readonly_fields = ('image_tag',)
+    fields = ('name', 'slug', 'cost_price', 'selling_price', 'description', 'brand', 'category', 'images')
+    readonly_fields = ('images',)
     filter_horizontal = ('category',)
     prepopulated_fields = {'slug': ('name',)}
 

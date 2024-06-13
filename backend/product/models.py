@@ -1,5 +1,7 @@
 from django.db import models
-from image_module.models import ImageModel
+
+from image_module.MultiImageModel import MultiImageModel
+
 
 class Brand(models.Model):
     name = models.CharField(max_length=255)
@@ -36,7 +38,7 @@ class Category(models.Model):
         ordering = ["-created_at"]
 
 
-class Product(models.Model):
+class Product(models.Model, MultiImageModel):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -52,10 +54,6 @@ class Product(models.Model):
     category = models.ManyToManyField(Category, related_name="products")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    @property
-    def images(self):
-        return ImageModel.objects.filter(related_primary_key=self.pk, related_model="Product", related_app="product")
 
     def __str__(self):
         return self.name
