@@ -6,19 +6,20 @@ from product.models import *
 
 from image_module.models import ImageModel
 
+from image_module.HasAdminImageInline import HasAdminImageInline
+
 
 # class CategoryInline(admin.TabularInline):
 #     model = Product.category.through
 
+#
+# class ImageInline(GenericTabularInline):
+#     model = ImageModel
 
-class ImageInline(GenericTabularInline):
-    model = ImageModel
 
+class ProductAdmin(admin.ModelAdmin, HasAdminImageInline):
 
-class ProductAdmin(admin.ModelAdmin):
-
-    inlines = [ImageInline]
-
+    inlines = []
     def images(self, obj):
         image_section = ""
         for image in obj.images:
