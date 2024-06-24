@@ -12,11 +12,11 @@ class ImageInline(GenericTabularInline):
 class HasAdminImageInlineMeta(type):
     def __init__(cls, name, bases, attrs):
         super().__init__(name, bases, attrs)
-        if name == 'AdminModeWithMultiImage':
+        if name == 'ModelAdminWithMultiImage':
             cls.inlines = list(getattr(cls, 'inlines', [])) + [ImageInline]
 
 
-class CombinedMeta(HasAdminImageInlineMeta, type(ModelAdmin)):
+class ImageFieldAndReadOnlyEnforcerMeta(type):
     def __init__(cls, name, bases, attrs):
         super().__init__(name, bases, attrs)
         fields = getattr(cls, 'fields', None)
@@ -25,7 +25,11 @@ class CombinedMeta(HasAdminImageInlineMeta, type(ModelAdmin)):
             cls.readonly_fields = list(readonly_fields) + ['images']
 
 
-class AdminModeWithMultiImage(ModelAdmin, metaclass=CombinedMeta):
+class CombinedMeta(HasAdminImageInlineMeta, ImageFieldAndReadOnlyEnforcerMeta, type(ModelAdmin)):
+    pass
+
+
+class ModelAdminWithMultiImage(ModelAdmin, metaclass=CombinedMeta):
     def images(self, obj):
         image_section = ""
         for image in obj.images:

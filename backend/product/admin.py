@@ -2,10 +2,10 @@ from django.conf.global_settings import MEDIA_ROOT
 from django.contrib import admin
 from django.utils.html import format_html
 from product.models import *
-from image_module.AdminModeWithMultiImage import AdminModeWithMultiImage
+from image_module.ModelAdminWithMultiImage import ModelAdminWithMultiImage
 
 
-class ProductAdmin(AdminModeWithMultiImage):
+class ProductAdmin(ModelAdminWithMultiImage):
 
     fields = ('name', 'slug', 'cost_price', 'selling_price', 'description', 'brand', 'category', 'images')
     filter_horizontal = ('category',)
