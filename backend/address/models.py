@@ -18,7 +18,8 @@ class Address(models.Model):
         Customer,
         related_name='addresses',
         on_delete=models.DO_NOTHING,
-        null=False, blank=False)
+        null=False, blank=False
+    )
 
     def __str__(self):
         return self.address
