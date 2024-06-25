@@ -19,7 +19,7 @@ class AddressView(APIView):
         serializer = AddressSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(customer=request.user.customer)
-            return Responder.success_response('Address added successfully', serializer.data)
+            return Responder.success_response('Address added successfully', serializer.data, status_code=status.HTTP_201_CREATED)
         return Responder.error_response('Invalid data', serializer.errors)
 
 
