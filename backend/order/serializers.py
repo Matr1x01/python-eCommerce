@@ -1,6 +1,8 @@
 from datetime import datetime
 from django.db import transaction
+from urllib.parse import urljoin
 from rest_framework import serializers
+from django.conf import settings
 from order.models import Order, OrderItem
 from cart.models import Cart
 from backend.enums.OrderStatus import OrderStatus
@@ -8,6 +10,7 @@ from backend.enums.PaymentStatus import PaymentStatus
 from backend.enums.DeliveryMethod import DeliveryMethod
 from backend.enums.PaymentMethod import PaymentMethod
 from backend.enums.status import Status
+from coupons.models import CouponHistory
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -22,7 +25,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return obj.product.slug
 
     def get_product_image(self, obj):
-        return obj.product.images.url if obj.product.images else None
+        return [urljoin(settings.APP_URL, image.image.url) for image in obj.product.images]
 
     class Meta:
         model = OrderItem
@@ -124,6 +127,11 @@ class OrderSerializer(serializers.ModelSerializer):
                     address=cart.address,
                 )
                 cart.status = Status.INACTIVE.value
+                if cart.coupon:
+                    CouponHistory.objects.create(
+                        coupon=cart.coupon, order=order
+                    )
+
                 cart.save()
             except Exception as e:
                 raise serializers.ValidationError(e)
