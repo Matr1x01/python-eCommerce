@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from product.models import Product, Category, Brand
+from .models import Product, Category, Brand
 
 
 class ProductTests(APITestCase):
@@ -18,11 +18,11 @@ class ProductTests(APITestCase):
             name='Test Category 2', slug="test-category-2")
 
         self.product1 = Product.objects.create(
-            name='Test Product', slug="test-product", selling_price=100, cost_price=50, brand=self.brand1)
+            name='Test Product', slug="test-product", selling_price=100, cost_price=50, brand=self.brand1, discount_price=80)
         self.product2 = Product.objects.create(
             name='Test Product 2', slug="test-product-2", selling_price=200, cost_price=100, brand=self.brand2)
         self.product3 = Product.objects.create(
-            name='Test Product 3', slug="test-product-3", selling_price=300, cost_price=150, brand=self.brand1)
+            name='Test Product 3', slug="test-product-3", selling_price=300, cost_price=150, brand=self.brand1, discount_price=250)
 
         self.product1.category.add(self.category1)
         self.product2.category.add(self.category2)
@@ -38,11 +38,11 @@ class ProductTests(APITestCase):
 
         expected_products = [
             {'name': 'Test Product', 'slug': 'test-product', 'selling_price': 100, 'brand': {'name': 'Test Brand',
-                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': "test-category"}], 'image': ""},
+                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': "test-category"}], 'image': "", 'has_discount': True, 'discount_price': 80.0},
             {'name': 'Test Product 2', 'slug': 'test-product-2', 'selling_price': 200, 'brand': {'name': 'Test Brand 2',
-                                                                                                 'slug': 'test-brand-2'}, 'category': [{'name': 'Test Category 2', 'slug': "test-category-2"}], 'image': ""},
+                                                                                                 'slug': 'test-brand-2'}, 'category': [{'name': 'Test Category 2', 'slug': "test-category-2"}], 'image': "", 'has_discount': False, 'discount_price': 0},
             {'name': 'Test Product 3', 'slug': 'test-product-3', 'selling_price': 300, 'brand': {'name': 'Test Brand',
-                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': "test-category"}], 'image': ""}
+                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': "test-category"}], 'image': "", 'has_discount': True, 'discount_price': 250.0}
         ]
 
         for product, expected in zip(products_list, expected_products):
@@ -61,7 +61,9 @@ class ProductTests(APITestCase):
             'brand': {'name': 'Test Brand', 'slug': 'test-brand'},
             'category': [{'name': 'Test Category', 'slug': "test-category"}],
             'images': [],
-            'description': ''
+            'description': '',
+            'has_discount': True,
+            'discount_price': 80.0
         }
         self.assertDictEqual(product_data, expected_product)
 
@@ -100,9 +102,9 @@ class ProductTests(APITestCase):
 
         expected_products = [
             {'name': 'Test Product', 'slug': 'test-product', 'selling_price': 100, 'brand': {'name': 'Test Brand',
-                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': ""},
+                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': "", 'has_discount': True, 'discount_price': 80.0},
             {'name': 'Test Product 3', 'slug': 'test-product-3', 'selling_price': 300, 'brand': {'name': 'Test Brand',
-                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': ""}
+                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': "", 'has_discount': True, 'discount_price': 250.0}
         ]
 
         for product, expected in zip(brand_products, expected_products):
@@ -142,9 +144,9 @@ class ProductTests(APITestCase):
 
         expected_products = [
             {'name': 'Test Product', 'slug': 'test-product', 'selling_price': 100, 'brand': {'name': 'Test Brand',
-                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': ""},
+                                                                                             'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': "", 'has_discount': True, 'discount_price': 80.0},
             {'name': 'Test Product 3', 'slug': 'test-product-3', 'selling_price': 300, 'brand': {'name': 'Test Brand',
-                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': ""}
+                                                                                                 'slug': 'test-brand'}, 'category': [{'name': 'Test Category', 'slug': 'test-category'}], 'image': "", 'has_discount': True, 'discount_price': 250.0}
         ]
 
         for product, expected in zip(category_products, expected_products):
@@ -172,4 +174,3 @@ class ProductTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get('data').get('items')), 2)
         self.assertEqual(response.data.get('data').get('meta').get('per_page'), 2)
-

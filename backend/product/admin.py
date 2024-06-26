@@ -7,7 +7,7 @@ from image_module.ModelAdminWithMultiImage import ModelAdminWithMultiImage
 
 class ProductAdmin(ModelAdminWithMultiImage):
 
-    fields = ('name', 'slug', 'cost_price', 'selling_price', 'description', 'brand', 'category', 'images')
+    fields = ('name', 'slug', 'cost_price', 'selling_price', 'discount_price', 'description', 'brand', 'category', 'images')
     filter_horizontal = ('category',)
     prepopulated_fields = {'slug': ('name',)}
 

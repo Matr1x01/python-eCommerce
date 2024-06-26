@@ -43,6 +43,7 @@ class Product(models.Model, MultiImageModel):
     slug = models.SlugField(max_length=255, unique=True)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2)
     selling_price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     description = models.TextField()
     brand = models.ForeignKey(
         Brand,
