@@ -56,6 +56,9 @@ class Product(models.Model, MultiImageModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def get_price(self):
+        return self.discount_price if self.discount_price else self.selling_price
+
     def __str__(self):
         return self.name
 

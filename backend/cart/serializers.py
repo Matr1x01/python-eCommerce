@@ -2,7 +2,9 @@ from django.shortcuts import get_object_or_404
 from backend.enums.status import Status
 from product.models import Product
 from .models import Cart, CartItem, Wishlist, WishlistItem
+from urllib.parse import urljoin
 from rest_framework import serializers
+from django.conf import settings
 
 from address.models import DeliveryCharge
 
@@ -11,17 +13,17 @@ class GetCartItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_slug = serializers.CharField(source='product.slug', read_only=True)
     product_selling_price = serializers.DecimalField(
-        source='product.selling_price', max_digits=10, decimal_places=2, read_only=True)
+        source='product.get_price', max_digits=10, decimal_places=2, read_only=True)
     product_images = serializers.SerializerMethodField()
     quantity_in_cart = serializers.IntegerField(
         source='quantity', read_only=True)
     total_price = serializers.SerializerMethodField()
 
     def get_product_images(self, obj):
-        return obj.product.images.url if obj.product.images else ''
+        return [urljoin(settings.APP_URL, image.image.url) for image in obj.product.images]
 
     def get_total_price(self, obj):
-        return obj.product.selling_price * obj.quantity
+        return obj.product.get_price() * obj.quantity
 
     class Meta:
         model = CartItem
@@ -57,12 +59,21 @@ class CartSerializer(serializers.ModelSerializer):
         else:
             shipping = 10
 
-        subtotal_price = sum(item.product.selling_price *
+        subtotal_price = sum(item.product.get_price() *
                              item.quantity for item in obj.items.all())
         total_items = sum(item.quantity for item in obj.items.all())
-        discount = 0
+        discount = obj.discount if obj.discount else 0
         tax = 0
         total = subtotal_price - discount + tax + shipping
+        coupon = obj.coupon
+
+        if total_items == 0:
+            total = 0
+            discount = 0
+            tax = 0
+            shipping = 0
+            coupon = None
+
         return {
             'subtotal_price': subtotal_price,
             'total_items': total_items,
@@ -70,6 +81,7 @@ class CartSerializer(serializers.ModelSerializer):
             'tax': tax,
             'shipping': shipping,
             'total': total,
+            'coupon': coupon,
         }
 
     class Meta:
@@ -96,7 +108,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         if isinstance(product, str):
             product = get_object_or_404(Product, slug=product)
         attrs['product'] = product
-        attrs['price'] = product.selling_price
+        attrs['price'] = product.get_price()
         return attrs
 
     class Meta:
@@ -106,7 +118,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def create(self, data):
         try:
-            data.price = data.product.selling_price
+            data.price = data.product.get_price()
             return CartItem.objects.create(**data)
         except Exception as e:
             raise serializers.ValidationError({"error": str(e)})
@@ -134,12 +146,12 @@ class WishlistSerializer(serializers.ModelSerializer):
 class GetWishlistItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_slug = serializers.CharField(source='product.slug', read_only=True)
-    product_selling_price = serializers.DecimalField(source='product.selling_price', max_digits=10, decimal_places=2,
+    product_selling_price = serializers.DecimalField(source='product.get_price', max_digits=10, decimal_places=2,
                                                      read_only=True)
     product_images = serializers.SerializerMethodField()
 
     def get_product_images(self, obj):
-        return obj.product.images.url if obj.product.images else ''
+        return [urljoin(settings.APP_URL, image.image.url) for image in obj.product.images]
 
     class Meta:
         model = WishlistItem

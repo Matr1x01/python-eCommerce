@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'address.apps.AddressConfig',
     'cart.apps.CartConfig',
     'order.apps.OrderConfig',
+    'coupons.apps.CouponsConfig',
 ]
 
 MIDDLEWARE = [

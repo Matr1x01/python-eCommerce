@@ -6,6 +6,8 @@ from backend.enums.status import Status
 import uuid
 from backend.enums.DeliveryMethod import DeliveryMethod
 
+from coupons.models import Coupon
+
 
 class ActiveCartItemManager(models.Manager):
     def get_queryset(self):
@@ -64,6 +66,7 @@ class Cart(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     delivery_method = models.CharField(max_length=255, null=False, blank=False, default=DeliveryMethod.HOME_DELIVERY.value)
     address = models.ForeignKey(Address, related_name='cart', null=False, blank=False, on_delete=models.DO_NOTHING)
+    coupon = models.ForeignKey(Coupon, related_name='carts', null=True, blank=True, on_delete=models.DO_NOTHING)
     status = models.SmallIntegerField(
         choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)
     

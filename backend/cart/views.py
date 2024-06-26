@@ -115,12 +115,14 @@ class CartAPIView(AuthenticatedAPIView):
             return Responder.error_response(message='Error adding product to cart',
                                             errors=cart_item_serializer.errors)
         product = cart_item_serializer.validated_data.get('product')
-        quantity = request.data.get('quantity', 0)
+        quantity = request.data.get('quantity')
 
         try:
             cart = get_cart(request.user)
             cart_item, created = cart.items.get_or_create(
-                product=product, defaults={'price': product.selling_price})
+                product=product,
+                defaults={'price': product.get_price()}
+            )
 
             if not created:
                 cart_item.quantity += quantity
@@ -133,6 +135,7 @@ class CartAPIView(AuthenticatedAPIView):
                     cart_item.quantity = quantity
                     cart_item.save()
                 else:
+                    cart_item.delete()
                     return Responder.error_response(
                         message='Quantity must be greater than 0',
                         status_code=status.HTTP_400_BAD_REQUEST
