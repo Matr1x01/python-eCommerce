@@ -98,15 +98,15 @@ class OrderSerializer(serializers.ModelSerializer):
         return data
 
     def validate_delivery_method(self, value):
-        if DeliveryMethod(value):
+        try:
             return DeliveryMethod(value).value
-        else:
+        except ValueError:
             raise serializers.ValidationError('Invalid delivery method')
 
     def validate_payment_method(self, value):
-        if PaymentMethod(value):
+        try:
             return PaymentMethod(value).value
-        else:
+        except ValueError:
             raise serializers.ValidationError('Invalid payment method')
 
     def create(self, data):
