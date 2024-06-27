@@ -86,8 +86,8 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ('key', 'created_at', 'updated_at', 'subtotal_price', 'total_items',
-                  'discount', 'tax', 'shipping', 'total', 'address', 'status', 'items', 'delivery_method')
+        fields = ('key', 'subtotal_price', 'total_items',
+                  'discount', 'tax', 'shipping', 'total', 'address', 'items', 'delivery_method')
         read_only_fields = fields
 
     def create(self, validated_data):
@@ -132,8 +132,8 @@ class WishlistSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Wishlist
-        fields = ('key', 'created_at', 'updated_at', 'status', 'items',)
-        read_only_fields = ('key', 'created_at', 'items')
+        fields = ('key',  'items',)
+        read_only_fields = ('key', 'items')
 
     def create(self, validated_data):
         try:
