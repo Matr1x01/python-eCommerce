@@ -7,6 +7,8 @@ from .models import Coupon
 from .serializers import ApplyCouponSerializer
 from backend.utils.Responder import Responder
 
+from cart.serializers import CartSerializer
+
 
 class CouponApplyView(APIView):
     permission_classes = [IsAuthenticated]
@@ -20,12 +22,12 @@ class CouponApplyView(APIView):
         customer = request.user.customer
 
         if not customer:
-            return Responder.error_response(message='Customer not found', status_code=status.HTTP_404_NOT_FOUND)
+            return Responder.error_response(message='Customer not found', status_code=status.HTTP_400_BAD_REQUEST)
 
         cart = customer.cart.filter(status=Status.ACTIVE.value).first()
 
         if not cart or cart.total_items == 0:
-            return Responder.error_response(message='Cart not found', status_code=status.HTTP_404_NOT_FOUND)
+            return Responder.error_response(message='Cart not found', status_code=status.HTTP_400_BAD_REQUEST)
 
         if cart.coupon:
             return Responder.error_response(message='Coupon already applied', status_code=status.HTTP_400_BAD_REQUEST)
@@ -42,10 +44,11 @@ class CouponApplyView(APIView):
             return Responder.error_response(message='Cart total price is less than 0', status_code=status.HTTP_400_BAD_REQUEST)
 
         cart.discount = coupon.discount
-        cart.total = cart_total_price
         cart.coupon = coupon
 
-        cart.save()
+        cart_serializer = CartSerializer(cart)
+
+        cart_serializer.update(cart, cart_serializer.calculate_cart_values(cart))
 
         return Responder.success_response('Coupon applied successfully', {'discount': coupon.discount})
 

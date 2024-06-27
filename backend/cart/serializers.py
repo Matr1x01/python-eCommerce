@@ -62,10 +62,10 @@ class CartSerializer(serializers.ModelSerializer):
         subtotal_price = sum(item.product.get_price() *
                              item.quantity for item in obj.items.all())
         total_items = sum(item.quantity for item in obj.items.all())
-        discount = obj.discount if obj.discount else 0
+        coupon = obj.coupon
+        discount = obj.discount if obj.coupon else 0
         tax = 0
         total = subtotal_price - discount + tax + shipping
-        coupon = obj.coupon
 
         if total_items == 0:
             total = 0
