@@ -111,6 +111,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, data):
         cart = data.get('cart')
+        if len(cart.items.all()) == 0:
+            raise serializers.ValidationError('Cart is empty')
         with transaction.atomic():
             try:
                 order = Order.objects.create(
