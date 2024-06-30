@@ -15,7 +15,13 @@ class ActiveOrderManager(models.Manager):
 
 class Order(models.Model):
     key = models.UUIDField(editable=False, default=uuid.uuid4, unique=True)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name='orders',
+        null=False, blank=False,
+        choices=[(customer.id, customer.name) for customer in Customer.objects.all()]
+    )
     date = models.DateTimeField(auto_now_add=True)
     total_items = models.IntegerField(default=0)
     sub_total = models.DecimalField(max_digits=10, decimal_places=2)
