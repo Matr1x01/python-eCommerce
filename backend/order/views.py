@@ -2,7 +2,6 @@ from rest_framework.views import APIView
 from backend.enums.status import Status
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from product.models import Product
 from backend.utils.ParseError import parse_error
 from backend.utils.Responder import Responder
 from order.serializers import OrderDetailsSerializer, OrderSerializer
