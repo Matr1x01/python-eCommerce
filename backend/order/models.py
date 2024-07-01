@@ -19,8 +19,7 @@ class Order(models.Model):
         Customer,
         on_delete=models.CASCADE,
         related_name='orders',
-        null=False, blank=False,
-        choices=[(customer.id, customer.name) for customer in Customer.objects.all()]
+        null=False, blank=False
     )
     date = models.DateTimeField(auto_now_add=True)
     total_items = models.IntegerField(default=0)
