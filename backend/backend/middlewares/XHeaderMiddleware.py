@@ -9,6 +9,12 @@ class XHeaderMiddleware:
     def __call__(self, request):
 
         headers = request.headers
+        response = self.get_response(request)
+
+        if not request.path.startswith('/api/'):
+            return response
+
         if 'X-Requested-With' in headers and headers['X-Requested-With'] == 'XMLHttpRequest':
-            return self.get_response(request)
+            return response
+
         return JsonResponse({'error': 'X-Requested-With must be XMLHttpRequest'}, status=HTTP_400_BAD_REQUEST)
