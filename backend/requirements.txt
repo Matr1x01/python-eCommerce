@@ -4,3 +4,4 @@ markdown       # Markdown support for the browsable API.
 django-filter
 Pillow
 load_dotenv
+django-cors-headers
