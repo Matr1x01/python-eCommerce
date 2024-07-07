@@ -52,5 +52,5 @@ class AddressDetailView(APIView):
         except Address.DoesNotExist:
             return Responder.error_response('Address not found', status_code=status.HTTP_404_NOT_FOUND)
         address.delete()
-        return Responder.success_response('Address deleted successfully')
+        return Responder.success_response(message='Address deleted successfully', status_code=status.HTTP_200_OK, data=[ ])
 

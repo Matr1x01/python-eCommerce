@@ -7,5 +7,5 @@ urlpatterns = [
          views.AddressView.as_view(http_method_names=['get','post']), name="addresses"),
 
     path("addresses/<uuid>/", views.AddressDetailView.as_view(
-        http_method_names=['get', 'put']), name="address-detail"),
+        http_method_names=['get', 'put', 'delete']), name="address-detail"),
 ]

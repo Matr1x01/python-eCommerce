@@ -50,7 +50,7 @@ class CouponApplyView(APIView):
 
         cart_serializer.update(cart, cart_serializer.calculate_cart_values(cart))
 
-        return Responder.success_response('Coupon applied successfully', {'discount': coupon.discount})
+        return Responder.success_response('Coupon applied successfully', {'discount': coupon.discount, 'cart': cart_serializer.data})
 
 
 

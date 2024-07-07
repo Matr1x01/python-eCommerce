@@ -65,7 +65,7 @@ class Cart(models.Model):
         max_digits=10, decimal_places=2, default=0.00)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     delivery_method = models.CharField(max_length=255, null=False, blank=False, default=DeliveryMethod.HOME_DELIVERY.value)
-    address = models.ForeignKey(Address, related_name='cart', null=False, blank=False, on_delete=models.DO_NOTHING)
+    address = models.ForeignKey(Address, related_name='cart', null=False, blank=False, on_delete=models.CASCADE)
     coupon = models.ForeignKey(Coupon, related_name='carts', null=True, blank=True, on_delete=models.DO_NOTHING)
     status = models.SmallIntegerField(
         choices=[(s.value, s.name) for s in Status], default=Status.ACTIVE.value)

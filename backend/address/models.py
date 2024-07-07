@@ -17,7 +17,7 @@ class Address(models.Model):
     customer = models.ForeignKey(
         Customer,
         related_name='addresses',
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         null=False, blank=False
     )
 
