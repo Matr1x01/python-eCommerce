@@ -40,6 +40,7 @@ class OrderDetailsSerializer(serializers.ModelSerializer):
     payment_method = serializers.SerializerMethodField()
     delivery_method = serializers.SerializerMethodField()
     ordered_items = OrderItemSerializer(source='items', many=True)
+    address = serializers.SerializerMethodField()
 
     def get_order_status(self, obj):
         return OrderStatus(obj.order_status).name
@@ -53,10 +54,13 @@ class OrderDetailsSerializer(serializers.ModelSerializer):
     def get_delivery_method(self, obj):
         return DeliveryMethod(obj.delivery_method).name
 
+    def get_address(self, obj):
+        return str(obj.address)
+
     class Meta:
         model = Order
         fields = ('key', 'total', 'tax', 'shipping', 'discount', 'sub_total', 'total_items', 'date', 'order_status',
-                  'payment_status', 'payment_method', 'delivery_method', 'ordered_items')
+                  'payment_status', 'payment_method', 'delivery_method', 'ordered_items', 'address')
         read_only_fields = fields
 
 
@@ -87,7 +91,7 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ('key', 'total', 'total_items', 'date', 'order_status', 'payment_status', 'payment_method', 'delivery_method', 'cart',
-                  'payment_method_name', 'delivery_method_name',)
+                  'payment_method_name', 'delivery_method_name')
         read_only_fields = ('key', 'total', 'date', 'order_status',
                             'payment_status', 'payment_method_name', 'delivery_method_name')
 

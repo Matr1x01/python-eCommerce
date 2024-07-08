@@ -4,7 +4,9 @@ from rest_framework import status
 
 class Responder:
     @staticmethod
-    def success_response(message, data, status_code=status.HTTP_200_OK):
+    def success_response(message, data=None, status_code=status.HTTP_200_OK):
+        if data is None:
+            data = {}
         return Response({
             'message': message,
             'status': 'success',

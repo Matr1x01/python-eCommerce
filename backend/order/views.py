@@ -6,6 +6,8 @@ from backend.utils.ParseError import parse_error
 from backend.utils.Responder import Responder
 from order.serializers import OrderDetailsSerializer, OrderSerializer
 
+from backend.enums.OrderStatus import OrderStatus
+
 
 class AuthenticatedAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -43,3 +45,18 @@ class OrderAPIView(AuthenticatedAPIView):
             return Responder.success_response('Order created successfully', OrderDetailsSerializer(order).data)
 
         return Responder.error_response(message='Error creating order', errors=serializer.errors)
+
+
+class OrderCancelAPIView(AuthenticatedAPIView):
+    def post(self, request, key):
+        customer = request.user.customer
+        order = customer.orders.filter(key=key).first()
+        if not order:
+            return Responder.error_response(message='Order not found', status_code=status.HTTP_404_NOT_FOUND)
+        if order.order_status != OrderStatus.PENDING.value:
+            return Responder.error_response(message='Order cannot be cancelled', status_code=status.HTTP_400_BAD_REQUEST)
+
+        order.order_status = OrderStatus.CANCELLED.value
+        order.save()
+
+        return Responder.success_response('Order cancelled successfully')

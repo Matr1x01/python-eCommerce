@@ -13,6 +13,8 @@ from rest_framework.authtoken.models import Token
 
 from address.models import Address
 
+from backend.enums.OrderStatus import OrderStatus
+
 
 class OrderTestCase(APITestCase):
     def setUp(self):
@@ -109,7 +111,8 @@ class OrderTestCase(APITestCase):
         response = self.client.get(self.order_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get('data')), 2)
-        keys = ["key", "total", "total_items", "date", "order_status", "payment_status", "payment_method_name", "delivery_method_name"]
+        keys = ["key", "total", "total_items", "date", "order_status", "payment_status", "payment_method_name",
+                "delivery_method_name"]
 
         for key in keys:
             self.assertTrue(key in response.data.get('data')[0])
@@ -128,8 +131,6 @@ class OrderTestCase(APITestCase):
         self.assertEqual(response.data.get('data')[1].get('payment_method_name'), 'CASH_ON_DELIVERY')
         self.assertEqual(response.data.get('data')[1].get('delivery_method_name'), 'HOME_DELIVERY')
 
-
-
     def test_get_order_details(self):
         cart_response = self.client.post(reverse('cart'), {'product': self.product.slug, 'quantity': 1}, format='json')
         self.assertEqual(cart_response.status_code, status.HTTP_200_OK)
@@ -145,7 +146,8 @@ class OrderTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(reverse('order-detail', kwargs={'key': response.data.get('data')[0].get('key')}))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        keys = ['key', 'total', 'tax', 'shipping', 'discount', 'sub_total', 'total_items', 'date', 'order_status', 'payment_status', 'payment_method', 'delivery_method', 'ordered_items']
+        keys = ['key', 'total', 'tax', 'shipping', 'discount', 'sub_total', 'total_items', 'date', 'order_status',
+                'payment_status', 'payment_method', 'delivery_method', 'ordered_items', "address"]
 
         for key in keys:
             self.assertTrue(key in response.data.get('data'))
@@ -165,3 +167,39 @@ class OrderTestCase(APITestCase):
         self.assertEqual(response.data.get('data').get('order_status'), 'PENDING')
         self.assertEqual(response.data.get('data').get('payment_method'), PaymentMethod.CASH_ON_DELIVERY.name)
         self.assertEqual(response.data.get('data').get('delivery_method'), DeliveryMethod.HOME_DELIVERY.name)
+
+    def test_order_cancel(self):
+        cart_response = self.client.post(reverse('cart'), {'product': self.product.slug, 'quantity': 1}, format='json')
+        self.assertEqual(cart_response.status_code, status.HTTP_200_OK)
+        data = {
+            'payment_method': PaymentMethod.CASH_ON_DELIVERY.value,
+            'delivery_method': DeliveryMethod.HOME_DELIVERY.value,
+        }
+        response = self.client.post(self.order_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get(self.order_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        key = response.data.get('data')[0].get('key')
+        response = self.client.post(reverse('order-cancel', kwargs={'key': key}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('message'), 'Order cancelled successfully')
+        self.assertEqual(Order.objects.filter(key=key).first().order_status, OrderStatus.CANCELLED.value)
+
+    def test_order_cancel_confirmed_order(self):
+        cart_response = self.client.post(reverse('cart'), {'product': self.product.slug, 'quantity': 1}, format='json')
+        self.assertEqual(cart_response.status_code, status.HTTP_200_OK)
+        data = {
+            'payment_method': PaymentMethod.CASH_ON_DELIVERY.value,
+            'delivery_method': DeliveryMethod.HOME_DELIVERY.value,
+        }
+        response = self.client.post(self.order_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get(self.order_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        key = response.data.get('data')[0].get('key')
+        order = Order.objects.filter(key=key).first()
+        order.order_status = OrderStatus.CONFIRMED.value
+        order.save()
+        response = self.client.post(reverse('order-cancel', kwargs={'key': key}))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Order.objects.filter(key=key).first().order_status, OrderStatus.CONFIRMED.value)
