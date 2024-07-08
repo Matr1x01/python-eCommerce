@@ -10,10 +10,9 @@ from backend.enums.status import Status
 from backend.enums.PaymentMethod import PaymentMethod
 from backend.enums.DeliveryMethod import DeliveryMethod
 from rest_framework.authtoken.models import Token
-
 from address.models import Address
-
 from backend.enums.OrderStatus import OrderStatus
+from backend.utils.enum_name_formatter import enum_name_formatter
 
 
 class OrderTestCase(APITestCase):
@@ -119,17 +118,17 @@ class OrderTestCase(APITestCase):
 
         self.assertEqual(float(response.data.get('data')[0].get('total')), 110)
         self.assertEqual(response.data.get('data')[0].get('total_items'), 1)
-        self.assertEqual(response.data.get('data')[0].get('payment_status'), 'UNPAID')
-        self.assertEqual(response.data.get('data')[0].get('order_status'), 'PENDING')
-        self.assertEqual(response.data.get('data')[0].get('payment_method_name'), 'CASH_ON_DELIVERY')
-        self.assertEqual(response.data.get('data')[0].get('delivery_method_name'), 'HOME_DELIVERY')
+        self.assertEqual(response.data.get('data')[0].get('payment_status'), 'Unpaid')
+        self.assertEqual(response.data.get('data')[0].get('order_status'), 'Pending')
+        self.assertEqual(response.data.get('data')[0].get('payment_method_name'), 'Cash On Delivery')
+        self.assertEqual(response.data.get('data')[0].get('delivery_method_name'), 'Home Delivery')
 
         self.assertEqual(float(response.data.get('data')[1].get('total')), 260)
         self.assertEqual(response.data.get('data')[1].get('total_items'), 2)
-        self.assertEqual(response.data.get('data')[1].get('payment_status'), 'UNPAID')
-        self.assertEqual(response.data.get('data')[1].get('order_status'), 'PENDING')
-        self.assertEqual(response.data.get('data')[1].get('payment_method_name'), 'CASH_ON_DELIVERY')
-        self.assertEqual(response.data.get('data')[1].get('delivery_method_name'), 'HOME_DELIVERY')
+        self.assertEqual(response.data.get('data')[1].get('payment_status'), 'Unpaid')
+        self.assertEqual(response.data.get('data')[1].get('order_status'), 'Pending')
+        self.assertEqual(response.data.get('data')[1].get('payment_method_name'), 'Cash On Delivery')
+        self.assertEqual(response.data.get('data')[1].get('delivery_method_name'), 'Home Delivery')
 
     def test_get_order_details(self):
         cart_response = self.client.post(reverse('cart'), {'product': self.product.slug, 'quantity': 1}, format='json')
@@ -163,10 +162,10 @@ class OrderTestCase(APITestCase):
         self.assertEqual(float(response.data.get('data').get('discount')), 0)
         self.assertEqual(float(response.data.get('data').get('sub_total')), 250)
         self.assertEqual(response.data.get('data').get('total_items'), 2)
-        self.assertEqual(response.data.get('data').get('payment_status'), 'UNPAID')
-        self.assertEqual(response.data.get('data').get('order_status'), 'PENDING')
-        self.assertEqual(response.data.get('data').get('payment_method'), PaymentMethod.CASH_ON_DELIVERY.name)
-        self.assertEqual(response.data.get('data').get('delivery_method'), DeliveryMethod.HOME_DELIVERY.name)
+        self.assertEqual(response.data.get('data').get('payment_status'), 'Unpaid')
+        self.assertEqual(response.data.get('data').get('order_status'), 'Pending')
+        self.assertEqual(response.data.get('data').get('payment_method'), enum_name_formatter(PaymentMethod.CASH_ON_DELIVERY.name))
+        self.assertEqual(response.data.get('data').get('delivery_method'), enum_name_formatter(DeliveryMethod.HOME_DELIVERY.name))
 
     def test_order_cancel(self):
         cart_response = self.client.post(reverse('cart'), {'product': self.product.slug, 'quantity': 1}, format='json')

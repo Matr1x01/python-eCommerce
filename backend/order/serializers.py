@@ -11,6 +11,7 @@ from backend.enums.DeliveryMethod import DeliveryMethod
 from backend.enums.PaymentMethod import PaymentMethod
 from backend.enums.status import Status
 from coupons.models import CouponHistory
+from backend.utils.enum_name_formatter import enum_name_formatter
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -43,16 +44,16 @@ class OrderDetailsSerializer(serializers.ModelSerializer):
     address = serializers.SerializerMethodField()
 
     def get_order_status(self, obj):
-        return OrderStatus(obj.order_status).name
+        return enum_name_formatter(OrderStatus(obj.order_status).name)
 
     def get_payment_status(self, obj):
-        return PaymentStatus(obj.payment_status).name
+        return enum_name_formatter(PaymentStatus(obj.payment_status).name)
 
     def get_payment_method(self, obj):
-        return PaymentMethod(obj.payment_method).name
+        return enum_name_formatter(PaymentMethod(obj.payment_method).name)
 
     def get_delivery_method(self, obj):
-        return DeliveryMethod(obj.delivery_method).name
+        return enum_name_formatter(DeliveryMethod(obj.delivery_method).name)
 
     def get_address(self, obj):
         return str(obj.address)
@@ -77,16 +78,16 @@ class OrderSerializer(serializers.ModelSerializer):
     delivery_method_name = serializers.SerializerMethodField()
 
     def get_order_status(self, obj):
-        return OrderStatus(obj.order_status).name
+        return enum_name_formatter(OrderStatus(obj.order_status).name)
 
     def get_payment_status(self, obj):
-        return PaymentStatus(obj.payment_status).name
+        return enum_name_formatter(PaymentStatus(obj.payment_status).name)
 
     def get_payment_method_name(self, obj):
-        return PaymentMethod(obj.payment_method).name
+        return enum_name_formatter(PaymentMethod(obj.payment_method).name)
 
     def get_delivery_method_name(self, obj):
-        return DeliveryMethod(obj.delivery_method).name
+        return enum_name_formatter(DeliveryMethod(obj.delivery_method).name)
 
     class Meta:
         model = Order
