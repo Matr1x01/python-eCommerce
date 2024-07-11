@@ -16,7 +16,7 @@ from rest_framework.decorators import permission_classes
 class ProductListView(PaginatedAPIView):
     def get(self, request):
         products = Product.objects.defer(
-            'description', 'cost_price').order_by('name')
+            'description', 'cost_price')
         products = self.get_paginated_response(products, ProductListSerializer)
         return Responder.success_response('Products fetched successfully', products)
 
@@ -50,7 +50,7 @@ class BrandDetailView(PaginatedAPIView):
             return Responder.error_response(message='Brand not found', status_code=status.HTTP_404_NOT_FOUND)
 
         brand_serializer = BrandSerializer(brand)
-        products = Product.objects.filter(brand=brand).order_by('name')
+        products = Product.objects.filter(brand=brand)
         paginated_products_response = self.get_paginated_response(
             products, ProductListSerializer)
 
@@ -79,7 +79,7 @@ class CategoryDetailView(PaginatedAPIView):
             return Responder.error_response(message='Category not found', status_code=status.HTTP_404_NOT_FOUND)
 
         category_serializer = CategorySerializer(category)
-        products = Product.objects.filter(category=category).order_by('name')
+        products = Product.objects.filter(category=category)
         paginated_products_response = self.get_paginated_response(
             products, ProductListSerializer)
 
