@@ -12,7 +12,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes
 
 
-@permission_classes((AllowAny, ))
+@permission_classes((AllowAny,))
 class ProductListView(PaginatedAPIView):
     def get(self, request):
         products = Product.objects.defer(
@@ -21,7 +21,21 @@ class ProductListView(PaginatedAPIView):
         return Responder.success_response('Products fetched successfully', products)
 
 
-@permission_classes((AllowAny, ))
+# ProductSearchView
+@permission_classes((AllowAny,))
+class ProductSearchView(PaginatedAPIView):
+    def get(self, request):
+        query = request.GET.get('query')
+
+        if not query:
+            return Responder.error_response('Query parameter is required', status_code=status.HTTP_400_BAD_REQUEST)
+
+        products = Product.objects.filter(name__icontains=query).defer('description', 'cost_price')
+        products = self.get_paginated_response(products, ProductListSerializer)
+        return Responder.success_response('Products fetched successfully', products)
+
+
+@permission_classes((AllowAny,))
 class ProductDetailView(APIView):
     def get(self, request, slug):
         try:
@@ -33,7 +47,7 @@ class ProductDetailView(APIView):
         return Responder.success_response('Product fetched successfully', {'product': serializer.data})
 
 
-@permission_classes((AllowAny, ))
+@permission_classes((AllowAny,))
 class BrandListView(PaginatedAPIView):
     def get(self, request):
         brands = Brand.objects.order_by('name')
@@ -41,7 +55,7 @@ class BrandListView(PaginatedAPIView):
         return Responder.success_response('Brands fetched successfully', brands)
 
 
-@permission_classes((AllowAny, ))
+@permission_classes((AllowAny,))
 class BrandDetailView(PaginatedAPIView):
     def get(self, request, slug):
         try:
@@ -61,7 +75,7 @@ class BrandDetailView(PaginatedAPIView):
         })
 
 
-@permission_classes((AllowAny, ))
+@permission_classes((AllowAny,))
 class CategoryListView(PaginatedAPIView):
     def get(self, request):
         categories = Category.objects.order_by('name')
@@ -70,7 +84,7 @@ class CategoryListView(PaginatedAPIView):
         return Responder.success_response('Categories fetched successfully', categories)
 
 
-@permission_classes((AllowAny, ))
+@permission_classes((AllowAny,))
 class CategoryDetailView(PaginatedAPIView):
     def get(self, request, slug):
         try:

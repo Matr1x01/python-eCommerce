@@ -7,6 +7,7 @@ urlpatterns = [
          views.ProductListView.as_view(http_method_names=['get']), name="products"),
     path("products/<slug>/", views.ProductDetailView.as_view(
         http_method_names=['get']), name="product-detail"),
+    path("products-search/", views.ProductSearchView.as_view( http_method_names=['get']), name="product-search"),
     path("brands/",
          views.BrandListView.as_view(http_method_names=['get']), name="brands"),
     path("brands/<slug>/",
