@@ -27,7 +27,11 @@ class OrderAdmin(admin.ModelAdmin):
 
         return format_html(section)
 
-    readonly_fields = ('customer', 'total', 'discount', 'tax', 'shipping', 'sub_total', 'total_items', 'items')
+    class Meta:
+        model = Order
+
+
+    readonly_fields = ('total', 'discount', 'tax', 'shipping', 'sub_total', 'total_items', 'items')
 
 
 class OrderItemAdmin(admin.ModelAdmin):

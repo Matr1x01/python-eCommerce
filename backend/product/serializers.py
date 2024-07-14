@@ -5,9 +5,14 @@ from .models import Product, Brand, Category
 
 
 class BrandListSerializer(serializers.ModelSerializer):
+    logo = serializers.SerializerMethodField()
+
+    def get_logo(self, obj):
+        return urljoin(settings.APP_URL, obj.logo.url) if obj.logo else ''
+
     class Meta:
         model = Brand
-        fields = ["name", "slug"]
+        fields = ["name", "slug", "logo"]
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
@@ -39,6 +44,15 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ["name", "slug", "selling_price", "brand", "category", "image", "has_discount", "discount_price"]
+
+
+class ProductSearchSerializer(serializers.ModelSerializer):
+    name = serializers.CharField()
+    slug = serializers.CharField()
+
+    class Meta:
+        model = Product
+        fields = ["name", "slug"]
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -80,4 +94,5 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ["name", "slug", "selling_price", "brand", "category", "description", "images", "has_discount", "discount_price"]
+        fields = ["name", "slug", "selling_price", "brand", "category", "description", "images", "has_discount",
+                  "discount_price"]

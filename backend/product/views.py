@@ -4,7 +4,7 @@ from .models import Product, Brand, Category
 from .serializers import (
     ProductListSerializer, ProductDetailSerializer,
     BrandListSerializer, BrandSerializer,
-    CategoryListSerializer, CategorySerializer
+    CategoryListSerializer, CategorySerializer, ProductSearchSerializer
 )
 from backend.utils.Responder import Responder
 from backend.utils.PaginatedAPIWiew import PaginatedAPIView
@@ -27,12 +27,14 @@ class ProductSearchView(PaginatedAPIView):
     def get(self, request):
         query = request.GET.get('query')
 
-        if not query:
-            return Responder.error_response('Query parameter is required', status_code=status.HTTP_400_BAD_REQUEST)
+        if not query or len(query) < 2:
+            return Responder.error_response('Query parameter must be at least 2 character', status_code=status.HTTP_400_BAD_REQUEST)
 
-        products = Product.objects.filter(name__icontains=query).defer('description', 'cost_price')
-        products = self.get_paginated_response(products, ProductListSerializer)
-        return Responder.success_response('Products fetched successfully', products)
+        products = Product.objects.filter(name__icontains=query)
+
+        product_serializer = ProductSearchSerializer(products, many=True)
+
+        return Responder.success_response('Products fetched successfully', product_serializer.data)
 
 
 @permission_classes((AllowAny,))

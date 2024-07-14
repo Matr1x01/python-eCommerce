@@ -40,6 +40,7 @@ APP_URL = f'{URL}:{PORT_NUMBER}'
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
