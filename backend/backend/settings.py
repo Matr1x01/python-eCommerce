@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-from pathlib import Path
-from django.core.management.commands.runserver import Command as runserver
 import os
+from pathlib import Path
+
+from django.core.management.commands.runserver import Command as runserver
 from dotenv import load_dotenv
 
 load_dotenv('.env')
@@ -39,13 +40,13 @@ APP_URL = f'{URL}:{PORT_NUMBER}'
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'corsheaders',
     'rest_framework.authtoken',
     'image_module.apps.ImageModuleConfig',
@@ -134,6 +135,8 @@ USE_I18N = True
 
 USE_TZ = True
 
+APPEND_SLASH = True
+
 CORS_ALLOW_ALL_ORIGINS = True
 
 MEDIA_ROOT = BASE_DIR / 'files'
@@ -156,7 +159,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'backend.utils.CustomTokenAuthentication.CustomTokenAuthentication',
-    )
+    ),
 }
 
 runserver.default_port = PORT_NUMBER
