@@ -25,16 +25,9 @@ jobs:
             "client_email": "${{ secrets.CLIENT_EMAIL }}", 
           }
           EOF
-
-      - name: Add file to Git (consider alternative storage for private key)
-        # Optional, if you need to commit the file (consider security implications)
+      - name: Add file to Git
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add ./service_account.json
+          git add service_account.json
           git commit -m "Add service account key JSON (excluding private key)"
-
-      - name: Create new branch and push (use with caution, consider pull requests)
-        run: |
-          git checkout -b service-account-changes  # Adjusted branch name
-          git push --set-upstream origin service-account-changes  # Use with caution, consider pull requests
