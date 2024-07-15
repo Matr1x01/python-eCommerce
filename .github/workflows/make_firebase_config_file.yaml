@@ -17,7 +17,7 @@ jobs:
         env:
           SERVICE_ACCOUNT_KEY_VALUE: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         run: |
-          cat <<EOF > /tmp/secrets/service_account.json
+          cat <<EOF > service_account.json
           {
             "type": "service_account",
             "project_id": "${{ secrets.PROJECT_ID }}",
@@ -25,7 +25,6 @@ jobs:
             "client_email": "${{ secrets.CLIENT_EMAIL }}", 
           }
           EOF
-          chmod 600 /tmp/secrets/service_account.json
 
       - name: Add file to Git (consider alternative storage for private key)
         # Optional, if you need to commit the file (consider security implications)
