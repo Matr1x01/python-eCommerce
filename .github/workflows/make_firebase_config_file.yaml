@@ -1,0 +1,26 @@
+name: Secure Service Account Key Usage
+
+on:
+  push:
+    branches: [ main ]  # Adjust branch as needed
+
+jobs:
+  create_file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Construct service account key JSON (avoid exposing private key)
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          SERVICE_ACCOUNT_KEY_VALUE="$SERVICE_ACCOUNT_KEY"  # Avoid direct interpolation
+          cat <<EOF > service_account.json  # Save directly to the root (adjust as needed)
+          {
+            "type": "service_account",
+            "project_id": "${{ secrets.PROJECT_ID }}",
+            "private_key_id": "59832af901e9f6419c2e3f81f6906611f62b956c",  # Placeholder, do not store as a secret
+            "client_email": "${{ secrets.CLIENT_EMAIL }}", 
+          }
+          EOF
+          echo "Service account key JSON created: service_account.json"
+          chmod 600 service_account.json  # Set restrictive permissions
