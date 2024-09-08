@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8080
+    volumes:
+      - .:/app
+    ports:
+      - "8080:8080"
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: "1"
+      URL: "http://0.0.0.0"
+      PORT_NUMBER: "8080"
+    depends_on:
+      - db
+
+  db:
+    image: jitesoft/sqlite
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+    restart: always
