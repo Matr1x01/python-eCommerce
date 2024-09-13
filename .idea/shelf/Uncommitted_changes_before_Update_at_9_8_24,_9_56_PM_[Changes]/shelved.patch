@@ -1,0 +1,138 @@
+Index: backend/.env
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>SECRET_KEY='django-insecure-6y)cj7(wbl_2%)n3of$2wc3%ksq=9&etxi!*k$o%_*-ydlf5jz'\nURL='http://localhost'\nPORT_NUMBER=8080\nMEDIA_URL='/files/'\nSTATIC_URL='static/'\n\nDEFAULT_ADDRESS='Dhanmondi, Dhaka'\nDEFAULT_POST_CODE='1209'\nDEFAULT_CITY='Dhaka'\nDEFAULT_COUNTRY='Bangladesh'\n\nMYSQL_DATABASE_NAME='python_ecommerce'\nMYSQL_USER='root'\nMYSQL_PASSWORD='appnapp123'\nMYSQL_HOST='localhost'\nMYSQL_PORT='3306'\n\n\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/.env b/backend/.env
+--- a/backend/.env	(revision 0382023d79a1000e4fa1e76b3b00df58d8b9788c)
++++ b/backend/.env	(date 1719903829086)
+@@ -10,8 +10,8 @@
+ DEFAULT_COUNTRY='Bangladesh'
+ 
+ MYSQL_DATABASE_NAME='python_ecommerce'
+-MYSQL_USER='root'
+-MYSQL_PASSWORD='appnapp123'
++MYSQL_USER='matrix'
++MYSQL_PASSWORD='matrix2580'
+ MYSQL_HOST='localhost'
+ MYSQL_PORT='3306'
+ 
+Index: .idea/modules.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/modules.xml b/.idea/modules.xml
+new file mode 100644
+--- /dev/null	(date 1719900701736)
++++ b/.idea/modules.xml	(date 1719900701736)
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="ProjectModuleManager">
++    <modules>
++      <module fileurl="file://$PROJECT_DIR$/.idea/python-ecomerse.iml" filepath="$PROJECT_DIR$/.idea/python-ecomerse.iml" />
++    </modules>
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/python-ecomerse.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/python-ecomerse.iml b/.idea/python-ecomerse.iml
+new file mode 100644
+--- /dev/null	(date 1719901801817)
++++ b/.idea/python-ecomerse.iml	(date 1719901801817)
+@@ -0,0 +1,29 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<module type="PYTHON_MODULE" version="4">
++  <component name="FacetManager">
++    <facet type="django" name="Django">
++      <configuration>
++        <option name="rootFolder" value="$MODULE_DIR$/backend" />
++        <option name="settingsModule" value="backend/settings.py" />
++        <option name="manageScript" value="$MODULE_DIR$/backend/manage.py" />
++        <option name="environment" value="&lt;map/&gt;" />
++        <option name="doNotUseTestRunner" value="false" />
++        <option name="trackFilePattern" value="migrations" />
++      </configuration>
++    </facet>
++  </component>
++  <component name="NewModuleRootManager">
++    <content url="file://$MODULE_DIR$">
++      <sourceFolder url="file://$MODULE_DIR$/backend" isTestSource="false" />
++      <excludeFolder url="file://$MODULE_DIR$/venv" />
++    </content>
++    <orderEntry type="sourceFolder" forTests="false" />
++  </component>
++  <component name="PyDocumentationSettings">
++    <option name="format" value="PLAIN" />
++    <option name="myDocStringFormat" value="Plain" />
++  </component>
++  <component name="TemplatesService">
++    <option name="TEMPLATE_CONFIGURATION" value="Django" />
++  </component>
++</module>
+\ No newline at end of file
+Index: .idea/material_theme_project_new.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/material_theme_project_new.xml b/.idea/material_theme_project_new.xml
+new file mode 100644
+--- /dev/null	(date 1719901695940)
++++ b/.idea/material_theme_project_new.xml	(date 1719901695940)
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="MaterialThemeProjectNewConfig">
++    <option name="metadata">
++      <MTProjectMetadataState>
++        <option name="migrated" value="true" />
++        <option name="pristineConfig" value="false" />
++        <option name="userId" value="-18f3eca2:18e93ed3a4b:-8000" />
++        <option name="version" value="8.13.2" />
++      </MTProjectMetadataState>
++    </option>
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/inspectionProfiles/profiles_settings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/inspectionProfiles/profiles_settings.xml b/.idea/inspectionProfiles/profiles_settings.xml
+new file mode 100644
+--- /dev/null	(date 1719900701892)
++++ b/.idea/inspectionProfiles/profiles_settings.xml	(date 1719900701892)
+@@ -0,0 +1,6 @@
++<component name="InspectionProjectProfileManager">
++  <settings>
++    <option name="USE_PROJECT_PROFILE" value="false" />
++    <version value="1.0" />
++  </settings>
++</component>
+\ No newline at end of file
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/vcs.xml b/.idea/vcs.xml
+new file mode 100644
+--- /dev/null	(date 1719900701856)
++++ b/.idea/vcs.xml	(date 1719900701856)
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="VcsDirectoryMappings">
++    <mapping directory="" vcs="Git" />
++  </component>
++</project>
+\ No newline at end of file

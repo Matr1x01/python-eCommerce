@@ -5,4 +5,3 @@ django-filter
 Pillow
 load_dotenv
 django-cors-headers
-django-jazzmin
